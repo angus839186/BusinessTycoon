@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d74c2759753d994fb754bb622341ea5, type: 3}
+  m_Name: "\u5546\u5E97"
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingDefinition
+  buildingId: shop_commercial
+  displayName: "\u5546\u5E97"
+  category: 2
+  icon: {fileID: 0}
+  markerColor: {r: 1, g: 0.91400456, b: 0, a: 1}
+  inputResources:
+  - resource: {fileID: 11400000, guid: 64a0455e3e60cb243a43ab78551c4e93, type: 2}
+    amount: 1
+  outputResources: []
+  processInterval:
+    months: 0
+    days: 0
+    hours: 0
+    minutes: 5
+  constructionCosts: []
+  maintenanceCosts: []
+  producedResource: {fileID: 0}
+  workSpeedMultiplier: 1
+  acceptsAnyResource: 0
+  storageLimits: []
+  maintenanceInterval:
+    months: 0
+    days: 0
+    hours: 0
+    minutes: 20

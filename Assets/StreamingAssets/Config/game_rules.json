@@ -1,0 +1,14 @@
+{
+  "buildingMaintenanceInterval": {
+    "months": 0,
+    "days": 1,
+    "hours": 0,
+    "minutes": 0
+  },
+  "demolitionCostRate": 0.2,
+  "constructionCostMultiplier": 1,
+  "maintenanceCostMultiplier": 1,
+  "commercialSalePriceMultiplier": 1,
+  "resourceProductionSpeedMultiplier": 1,
+  "transportIntervalMultiplier": 1
+}
