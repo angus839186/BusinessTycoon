@@ -11,8 +11,10 @@ public sealed class GameClock : MonoBehaviour
     [SerializeField] private float speedStep = 0.25f;
 
     private float speedMultiplier = 1f;
+    private int lastDisplayedMonth = 1;
     private int lastDisplayedMinute = -1;
 
+    public event Action MonthChanged;
     public event Action TimeChanged;
     public event Action SpeedChanged;
 
@@ -29,7 +31,18 @@ public sealed class GameClock : MonoBehaviour
 
     private void Update()
     {
-        totalGameMinutes += Time.deltaTime * gameMinutesPerRealSecond * speedMultiplier;
+        totalGameMinutes +=
+            Time.deltaTime *
+            gameMinutesPerRealSecond *
+            speedMultiplier;
+
+        int currentMonth = Month;
+
+        if (currentMonth != lastDisplayedMonth)
+        {
+            lastDisplayedMonth = currentMonth;
+            MonthChanged?.Invoke();
+        }
 
         int currentDisplayedMinute = (int)totalGameMinutes;
 
@@ -109,6 +122,7 @@ public sealed class GameClock : MonoBehaviour
         );
 
         lastDisplayedMinute = (int)totalGameMinutes;
+        lastDisplayedMonth = Month;
 
         SpeedChanged?.Invoke();
         TimeChanged?.Invoke();

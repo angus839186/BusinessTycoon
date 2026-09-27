@@ -10,7 +10,6 @@ public sealed class BuildingDemolitionController : MonoBehaviour
 
     [SerializeField] private BuildingPlacementController buildingPlacement;
     [SerializeField] private TextMeshProUGUI statusText;
-    [SerializeField] private BuildingInfoPanel buildingInfoPanel;
 
     private bool isDemolitionMode;
 
@@ -18,8 +17,6 @@ public sealed class BuildingDemolitionController : MonoBehaviour
 
     private void Awake()
     {
-        if (buildingInfoPanel == null)
-            buildingInfoPanel = FindFirstObjectByType<BuildingInfoPanel>();
         if (buildingPlacement == null)
             buildingPlacement = FindFirstObjectByType<BuildingPlacementController>();
         if (productionSystem == null)
@@ -116,13 +113,6 @@ public sealed class BuildingDemolitionController : MonoBehaviour
 
         if (productionSystem != null)
             productionSystem.Unregister(building);
-        if (
-buildingInfoPanel != null &&
-buildingInfoPanel.IsShowing(building)
-)
-        {
-            buildingInfoPanel.ClearSelection();
-        }
 
         Destroy(building.gameObject);
 

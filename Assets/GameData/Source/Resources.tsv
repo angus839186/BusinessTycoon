@@ -1,0 +1,4 @@
+resourceId	displayName	basePrice	iconPath	enabled
+rice_plant	水稻	15		TRUE
+rice	白飯	50		TRUE
+Money	金錢	1		TRUE

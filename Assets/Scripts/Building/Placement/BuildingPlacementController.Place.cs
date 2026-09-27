@@ -52,7 +52,7 @@ public sealed partial class BuildingPlacementController
         Debug.Log(
             $"Building Placed: Building={selectedBuilding.displayName}, " +
             $"Lon={longitude:F6}, Lat={latitude:F6}, " +
-            $"Total={placedBuildings.Count}"
+            $"Total={productionSystem?.Buildings.Count ?? 0}"
         );
     }
 
@@ -90,15 +90,6 @@ public sealed partial class BuildingPlacementController
             productionSystem.Register(instance);
 
         CreateProgressBar(buildingObject.transform, instance);
-
-        placedBuildings.Add(new PlacedBuildingData
-        {
-            buildingId = definition.buildingId,
-            buildingDisplayName = definition.displayName,
-            longitude = longitude,
-            latitude = latitude,
-            worldPosition = worldPosition
-        });
 
         return instance;
     }

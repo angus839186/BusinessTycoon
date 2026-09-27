@@ -1,0 +1,4 @@
+ownerResourceId	ioType	resourceId	amount	enabled
+rice_plant	Output	rice_plant	2	TRUE
+rice	Input	rice_plant	3	TRUE
+rice	Output	rice	1	TRUE

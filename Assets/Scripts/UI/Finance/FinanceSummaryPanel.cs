@@ -1,21 +1,25 @@
-using System.Text;
-using TMPro;
 using UnityEngine;
 
 public sealed class FinanceSummaryPanel : MonoBehaviour
 {
     [SerializeField] private ProductionSystem productionSystem;
-    [SerializeField] private TextMeshProUGUI outputText;
-    [SerializeField] private GameClock gameClock;
+    [SerializeField] private Transform listRoot;
+    [SerializeField] private FinanceSummaryItemUI itemPrefab;
+    [SerializeField] private GameObject emptyText;
 
-    private readonly StringBuilder builder = new StringBuilder();
+    private ReusableUIList<FinanceSummaryItemUI> itemList;
 
     private void Awake()
     {
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
-        if (gameClock == null)
-            gameClock = FindFirstObjectByType<GameClock>();
+        if (itemPrefab != null && listRoot != null)
+        {
+            itemList = new ReusableUIList<FinanceSummaryItemUI>(
+                itemPrefab,
+                listRoot
+            );
+        }
     }
 
     private void OnEnable()
@@ -34,48 +38,33 @@ public sealed class FinanceSummaryPanel : MonoBehaviour
 
     public void Refresh()
     {
-        if (outputText == null)
-            return;
+        int recordCount = productionSystem != null
+            ? productionSystem.MonthlyFinanceRecords.Count
+            : 0;
 
-        builder.Clear();
-
-        if (productionSystem == null)
+        if (itemList != null)
         {
-            outputText.text = "ProductionSystem missing";
-            return;
-        }
-        int currentMonth = gameClock != null ? gameClock.Month : 1;
+            for (int i = 0; i < recordCount; i++)
+            {
+                FinanceSummaryItemUI item =
+                    itemList.GetOrCreate(i);
 
-        int monthlyIncome = 0;
-        int monthlyExpense = 0;
-        int totalIncome = 0;
-        int totalExpense = 0;
+                if (item == null)
+                    continue;
 
-        foreach (IncomeRecord record in productionSystem.IncomeRecords)
-        {
-            totalIncome += record.income;
+                int recordIndex = recordCount - 1 - i;
 
-            if (gameClock != null && GetMonth(record.gameMinutes) == currentMonth)
-                monthlyIncome += record.income;
-        }
+                item.SetData(
+                    productionSystem.MonthlyFinanceRecords[
+                        recordIndex
+                    ]
+                );
+            }
 
-        foreach (ExpenseRecord record in productionSystem.ExpenseRecords)
-        {
-            totalExpense += record.expense;
-
-            if (gameClock != null && GetMonth(record.gameMinutes) == currentMonth)
-                monthlyExpense += record.expense;
+            itemList.HideFrom(recordCount);
         }
 
-        builder.Append(
-            $"月收入: {monthlyIncome}  月支出: {monthlyExpense}  月結: {monthlyIncome - monthlyExpense}  " +
-            $"總收入: {totalIncome}  總支出: {totalExpense}  現金流: {totalIncome - totalExpense}"
-        );
-        outputText.text = builder.ToString();
-    }
-    private int GetMonth(double gameMinutes)
-    {
-        int daysPerMonth = 30;
-        return (int)(gameMinutes / (daysPerMonth * 24 * 60)) + 1;
+        if (emptyText != null)
+            emptyText.SetActive(recordCount == 0);
     }
 }

@@ -25,6 +25,7 @@ public sealed class BuildingDefinition : ScriptableObject
     [InspectorName("顯示名稱")] public string displayName;
     [InspectorName("建築類型")] public BuildingCategory category;
     public Sprite icon;
+    public bool isEnabled = true;
     public Color markerColor = Color.white;
     [Header("輸入")]
     public ResourceAmount[] inputResources;

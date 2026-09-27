@@ -1,94 +1,160 @@
+using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using TMPro;
+
 public sealed class ResourceSummaryPanel : MonoBehaviour
 {
     [SerializeField] private ProductionSystem productionSystem;
-    [SerializeField] private TextMeshProUGUI outputText;
-    private readonly StringBuilder builder = new StringBuilder();
+    [SerializeField] private GameDefinitionCatalog definitionCatalog;
+
+    [SerializeField] private Transform listRoot;
+    [SerializeField] private ResourceSummaryItemUI itemPrefab;
+    [SerializeField] private GameObject emptyText;
+
     private readonly Dictionary<ResourceDefinition, int> totals =
         new Dictionary<ResourceDefinition, int>();
+
+    private readonly Dictionary<
+        ResourceDefinition,
+        ResourceSummaryItemUI
+    > items = new Dictionary<
+        ResourceDefinition,
+        ResourceSummaryItemUI
+    >();
 
     private void Awake()
     {
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
+
+        if (definitionCatalog == null)
+            definitionCatalog =
+                FindFirstObjectByType<GameDefinitionCatalog>();
     }
+
     private void OnEnable()
     {
         if (productionSystem != null)
-            productionSystem.DataChanged += Refresh;
+            productionSystem.DataChanged += RefreshAmounts;
 
-        Refresh();
+        EnsureItemsCreated();
+        RefreshAmounts();
     }
 
     private void OnDisable()
     {
         if (productionSystem != null)
-            productionSystem.DataChanged -= Refresh;
+            productionSystem.DataChanged -= RefreshAmounts;
     }
 
-    private void Refresh()
+    private void EnsureItemsCreated()
     {
-        if (outputText == null)
-            return;
-
-        builder.Clear();
-        totals.Clear();
-
-        if (productionSystem == null)
+        if (
+            items.Count > 0 ||
+            definitionCatalog == null ||
+            listRoot == null ||
+            itemPrefab == null
+        )
         {
-            builder.AppendLine("ProductionSystem missing");
-            outputText.text = builder.ToString();
             return;
         }
-        foreach (ResourceStack stack in productionSystem.GlobalInventory.Resources)
+
+        List<ResourceDefinition> definitions =
+            new List<ResourceDefinition>(
+                definitionCatalog.ResourceDefinitions
+            );
+
+        definitions.Sort(CompareDefinitions);
+
+        foreach (ResourceDefinition definition in definitions)
         {
-            if (stack == null || stack.resource == null || stack.amount <= 0)
+            if (definition == null)
                 continue;
+
+            ResourceSummaryItemUI item =
+                Instantiate(itemPrefab, listRoot);
+
+            item.gameObject.SetActive(true);
+            item.Initialize(definition);
+            items.Add(definition, item);
+        }
+
+        if (emptyText != null)
+            emptyText.SetActive(items.Count == 0);
+    }
+
+    private void RefreshAmounts()
+    {
+        totals.Clear();
+
+        foreach (ResourceDefinition definition in items.Keys)
+            totals.Add(definition, 0);
+
+        if (productionSystem != null)
+        {
+            AddInventory(productionSystem.GlobalInventory);
+
+            foreach (
+                BuildingInstance building
+                in productionSystem.Buildings
+            )
+            {
+                if (building != null)
+                    AddInventory(building.Inventory);
+            }
+        }
+
+        foreach (
+            KeyValuePair<ResourceDefinition, ResourceSummaryItemUI>
+            pair in items
+        )
+        {
+            int amount = totals.TryGetValue(
+                pair.Key,
+                out int total
+            )
+                ? total
+                : 0;
+
+            pair.Value.SetAmount(amount);
+        }
+    }
+
+    private void AddInventory(BuildingInventory inventory)
+    {
+        if (inventory == null)
+            return;
+
+        foreach (ResourceStack stack in inventory.Resources)
+        {
+            if (
+                stack == null ||
+                stack.resource == null ||
+                stack.amount <= 0
+            )
+            {
+                continue;
+            }
 
             if (!totals.ContainsKey(stack.resource))
                 totals.Add(stack.resource, 0);
 
             totals[stack.resource] += stack.amount;
         }
+    }
 
-        foreach (BuildingInstance building in productionSystem.Buildings)
-        {
-            if (building == null)
-                continue;
+    private static int CompareDefinitions(
+        ResourceDefinition left,
+        ResourceDefinition right
+    )
+    {
+        string leftName = left != null ? left.displayName : "";
+        string rightName = right != null ? right.displayName : "";
 
-            foreach (ResourceStack stack in building.Inventory.Resources)
-            {
-                if (stack == null || stack.resource == null || stack.amount <= 0)
-                    continue;
-
-                if (!totals.ContainsKey(stack.resource))
-                    totals.Add(stack.resource, 0);
-
-                totals[stack.resource] += stack.amount;
-            }
-        }
-
-        builder.AppendLine("Resource Summary");
-
-        if (totals.Count == 0)
-        {
-            builder.AppendLine("- Empty");
-        }
-        else
-        {
-            foreach (KeyValuePair<ResourceDefinition, int> pair in totals)
-            {
-                string name = string.IsNullOrWhiteSpace(pair.Key.displayName)
-                    ? pair.Key.resourceId
-                    : pair.Key.displayName;
-
-                builder.AppendLine($"- {name}: {pair.Value}");
-            }
-        }
-
-        outputText.text = builder.ToString();
+        return string.Compare(
+            leftName,
+            rightName,
+            StringComparison.Ordinal
+        );
     }
 }

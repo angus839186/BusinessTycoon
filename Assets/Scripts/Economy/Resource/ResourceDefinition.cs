@@ -9,6 +9,7 @@ public sealed class ResourceDefinition : ScriptableObject
     public string resourceId;
     public string displayName;
     public Sprite icon;
+    public bool isEnabled = true;
 
     public int basePrice = 0;
 

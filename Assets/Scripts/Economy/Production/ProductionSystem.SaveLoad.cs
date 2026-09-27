@@ -18,6 +18,7 @@ public sealed partial class ProductionSystem
         globalInventory.Clear();
         incomeRecords.Clear();
         expenseRecords.Clear();
+        monthlyFinanceRecords.Clear();
     }
 
     public void RestoreGlobalResource(
@@ -52,11 +53,39 @@ public sealed partial class ProductionSystem
         while (expenseRecords.Count > maxExpenseRecords)
             expenseRecords.RemoveAt(expenseRecords.Count - 1);
     }
+    public void RestoreMonthlyFinanceRecord(
+    int month,
+    int income,
+    int expense
+)
+    {
+        if (month <= 0)
+            return;
+
+        foreach (
+            MonthlyFinanceRecord existingRecord
+            in monthlyFinanceRecords
+        )
+        {
+            if (existingRecord.month == month)
+                return;
+        }
+
+        MonthlyFinanceRecord record =
+            new MonthlyFinanceRecord(month);
+
+        record.AddIncome(income);
+        record.AddExpense(expense);
+
+        monthlyFinanceRecords.Add(record);
+    }
 
     public void CompleteLoad()
     {
+        GetOrCreateMonthlyFinanceRecord();
         isRestoringState = false;
 
+        BuildingsChanged?.Invoke();
         FinanceChanged?.Invoke();
         DataChanged?.Invoke();
     }

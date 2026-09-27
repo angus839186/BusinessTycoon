@@ -16,6 +16,14 @@ public sealed partial class ProductionSystem
         FinanceChanged?.Invoke();
         MarkDataChanged();
     }
+    private void MarkBuildingsChanged()
+    {
+        if (isRestoringState)
+            return;
+
+        BuildingsChanged?.Invoke();
+        MarkDataChanged();
+    }
 
     public void Register(BuildingInstance building)
     {
@@ -28,7 +36,7 @@ public sealed partial class ProductionSystem
             building.SetLastProcessGameMinutes(gameClock.TotalGameMinutes);
 
         buildings.Add(building);
-        MarkDataChanged();
+        MarkBuildingsChanged();
     }
 
     public void Unregister(BuildingInstance building)
@@ -37,6 +45,6 @@ public sealed partial class ProductionSystem
             return;
 
         buildings.Remove(building);
-        MarkDataChanged();
+        MarkBuildingsChanged();
     }
 }

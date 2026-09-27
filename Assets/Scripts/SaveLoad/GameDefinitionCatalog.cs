@@ -12,6 +12,8 @@ public sealed class GameDefinitionCatalog : MonoBehaviour
 
     private readonly Dictionary<string, ResourceDefinition> resourcesById =
         new Dictionary<string, ResourceDefinition>(StringComparer.Ordinal);
+    public IEnumerable<ResourceDefinition> ResourceDefinitions =>
+    resourcesById.Values;
 
     public int BuildingCount => buildingsById.Count;
     public int ResourceCount => resourcesById.Count;

@@ -6,8 +6,6 @@ using TMPro;
 public sealed class TransportRouteBuilder : MonoBehaviour
 {
     [SerializeField] private TransportSystem transport;
-    [SerializeField] private ResourceDefinition selectedResource;
-    [SerializeField] private int amountPerTransfer = 1;
     [SerializeField] private TextMeshProUGUI statusText;
 
     private bool isCreatingRoute;
@@ -25,14 +23,17 @@ public sealed class TransportRouteBuilder : MonoBehaviour
         if (!isCreatingRoute || Mouse.current == null)
             return;
 
-        if (Mouse.current.rightButton.wasPressedThisFrame)
+        if (
+    Mouse.current.rightButton.wasPressedThisFrame ||
+    (
+        Keyboard.current != null &&
+        Keyboard.current.escapeKey.wasPressedThisFrame
+    )
+)
         {
             CancelCreateRoute();
             return;
         }
-
-        if (!Mouse.current.leftButton.wasPressedThisFrame)
-            return;
 
         // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         //     return;
@@ -55,9 +56,7 @@ public sealed class TransportRouteBuilder : MonoBehaviour
 
         transport.AddDefinedRoute(
     selectedSource,
-    clickedBuilding,
-    selectedResource,
-    amountPerTransfer
+    clickedBuilding
 );
 
         SetStatus("路線已建立");
@@ -66,14 +65,15 @@ public sealed class TransportRouteBuilder : MonoBehaviour
 
     public void StartCreateRoute()
     {
-        if (selectedResource == null)
+        if (transport == null)
         {
-            Debug.Log("Cannot create route: no resource selected.");
+            Debug.LogError("TransportSystem missing.");
             return;
         }
 
         isCreatingRoute = true;
         selectedSource = null;
+
         SetStatus("請選擇來源建築");
         Debug.Log("Route creation started. Click source building.");
     }
@@ -105,24 +105,6 @@ public sealed class TransportRouteBuilder : MonoBehaviour
             return null;
 
         return hit.collider.GetComponent<BuildingInstance>();
-    }
-
-    public void SetSelectedResource(ResourceDefinition resource)
-    {
-        selectedResource = resource;
-
-        if (selectedResource == null)
-        {
-            Debug.Log("Route resource selected: none");
-            return;
-        }
-
-        Debug.Log($"Route resource selected: {selectedResource.displayName}");
-    }
-
-    public void SetAmountPerTransfer(int amount)
-    {
-        amountPerTransfer = Mathf.Max(1, amount);
     }
     private void SetStatus(string message)
     {

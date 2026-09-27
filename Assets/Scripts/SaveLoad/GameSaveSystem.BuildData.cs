@@ -105,6 +105,23 @@ public sealed partial class GameSaveSystem
                 gameMinutes = record.gameMinutes
             });
         }
+        foreach (
+    MonthlyFinanceRecord record
+    in productionSystem.MonthlyFinanceRecords
+)
+        {
+            if (record == null || record.month <= 0)
+                continue;
+
+            data.monthlyFinanceRecords.Add(
+                new MonthlyFinanceRecordSaveData
+                {
+                    month = record.month,
+                    income = record.income,
+                    expense = record.expense
+                }
+            );
+        }
 
         return data;
     }

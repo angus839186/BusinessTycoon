@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public sealed partial class BuildingPlacementController : MonoBehaviour
 {
@@ -9,14 +8,11 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
     public BuildingDefinition SelectedBuilding => selectedBuilding;
     private int nextBuildingInstanceIndex = 1;
     public int NextBuildingInstanceIndex => nextBuildingInstanceIndex;
-    private readonly List<PlacedBuildingData> placedBuildings =
-    new List<PlacedBuildingData>();
 
     private bool isPlacementMode;
 
     public bool IsPlacementMode => isPlacementMode;
 
-    [SerializeField] private string saveFileName = "placed_buildings.json";
     private void Awake()
     {
         if (demolitionController == null)
@@ -63,6 +59,10 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
             ExitPlacementMode();
         else
             EnterPlacementMode();
+    }
+    public bool CanPlaceSelectedBuilding()
+    {
+        return isPlacementMode && selectedBuilding != null;
     }
 
 }

@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceDefinition
   resourceId: Money
   displayName: "\u91D1\u9322"
-  color: {r: 1, g: 1, b: 1, a: 1}
+  icon: {fileID: 0}
+  isEnabled: 1
   basePrice: 1
+  recipe:
+    inputResources: []
+    outputResources: []

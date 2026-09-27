@@ -116,7 +116,9 @@ public sealed class TransportRouteListItemUI : MonoBehaviour
 
         owner.SetRouteAmount(routeId, amountPerTransfer + 1);
     }
-    private void SetupResourceDropdown(TransportRouteDefinition route)
+    private void SetupResourceDropdown(
+    TransportRouteDefinition route
+)
     {
         if (resourceDropdown == null || owner == null || route == null)
             return;
@@ -125,46 +127,69 @@ public sealed class TransportRouteListItemUI : MonoBehaviour
         resourceDropdown.ClearOptions();
         resourceDropdown.onValueChanged.RemoveAllListeners();
 
-        resources.AddRange(owner.GetAvailableRouteResources(route));
+        // Index 0 代表尚未選擇資源。
+        resources.Add(null);
 
-        if (route.resource != null && !resources.Contains(route.resource))
-            resources.Insert(0, route.resource);
+        List<ResourceDefinition> availableResources =
+            owner.GetAvailableRouteResources(route);
 
-        List<string> labels =
-            new List<string>();
+        foreach (ResourceDefinition resource in availableResources)
+        {
+            if (resource != null && !resources.Contains(resource))
+                resources.Add(resource);
+        }
+
+        if (
+            route.resource != null &&
+            !resources.Contains(route.resource)
+        )
+        {
+            resources.Add(route.resource);
+        }
+
+        List<string> labels = new List<string>
+    {
+        "選擇資源"
+    };
 
         int selectedIndex = 0;
 
-        for (int i = 0; i < resources.Count; i++)
+        for (int i = 1; i < resources.Count; i++)
         {
             ResourceDefinition resource = resources[i];
 
-            if (resource == null)
-                continue;
+            labels.Add(
+                string.IsNullOrWhiteSpace(resource.displayName)
+                    ? resource.resourceId
+                    : resource.displayName
+            );
 
             if (resource == route.resource)
                 selectedIndex = i;
-
-            labels.Add(string.IsNullOrWhiteSpace(resource.displayName)
-                ? resource.resourceId
-                : resource.displayName);
         }
 
         resourceDropdown.AddOptions(labels);
-        resourceDropdown.value = selectedIndex;
+        resourceDropdown.SetValueWithoutNotify(selectedIndex);
         resourceDropdown.RefreshShownValue();
-        resourceDropdown.onValueChanged.AddListener(OnResourceChanged);
+        resourceDropdown.interactable = resources.Count > 1;
+
+        resourceDropdown.onValueChanged.AddListener(
+            OnResourceChanged
+        );
     }
 
     private void OnResourceChanged(int index)
     {
         if (
-            owner == null ||
-            string.IsNullOrWhiteSpace(routeId) ||
-            index < 0 ||
-            index >= resources.Count
-        )
+    owner == null ||
+    string.IsNullOrWhiteSpace(routeId) ||
+    index < 0 ||
+    index >= resources.Count ||
+    resources[index] == null
+)
+        {
             return;
+        }
 
         owner.SetRouteResource(routeId, resources[index]);
     }

@@ -1,0 +1,5 @@
+buildingId	displayName	category	producedResourceId	processMonths	processDays	processHours	processMinutes	workSpeedMultiplier	acceptsAnyResource	markerColor	iconPath	enabled
+rice_farm	水稻農場	Resource	rice_plant	0	0	0	5	1	FALSE	#F54D48		TRUE
+rice_processor	水稻加工廠	Processing	rice	0	0	0	5	1	FALSE	#FF992A		TRUE
+shop_commercial	商店	Commercial		0	0	0	5	1	FALSE	#FFE900		TRUE
+storage_basic	倉庫	Storage		0	0	0	0	1	TRUE	#FFFFFF		TRUE

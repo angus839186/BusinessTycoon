@@ -1,78 +1,68 @@
-using System.Text;
 using UnityEngine;
-using TMPro;
 
 public sealed class BuildingListPanel : MonoBehaviour
 {
     [SerializeField] private ProductionSystem productionSystem;
-    [SerializeField] private TextMeshProUGUI outputText;
 
-    [SerializeField] private GameClock gameClock;
-    private readonly StringBuilder builder = new StringBuilder();
+    [SerializeField] private Transform listRoot;
+    [SerializeField] private BuildingListItemUI itemPrefab;
+    [SerializeField] private GameObject emptyText;
+
+    private ReusableUIList<BuildingListItemUI> itemList;
 
     private void Awake()
     {
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
-        if (gameClock == null)
-            gameClock = FindFirstObjectByType<GameClock>();
+
+        if (itemPrefab != null && listRoot != null)
+        {
+            itemList = new ReusableUIList<BuildingListItemUI>(
+                itemPrefab,
+                listRoot
+            );
+        }
     }
 
     private void OnEnable()
     {
         if (productionSystem != null)
-            productionSystem.DataChanged += Refresh;
+            productionSystem.BuildingsChanged += Refresh;
 
         Refresh();
     }
+
     private void OnDisable()
     {
         if (productionSystem != null)
-            productionSystem.DataChanged -= Refresh;
+            productionSystem.BuildingsChanged -= Refresh;
     }
+
     private void Refresh()
     {
-        if (outputText == null)
+        if (productionSystem == null || itemList == null)
             return;
 
-        builder.Clear();
+        int itemIndex = 0;
 
-        if (productionSystem == null)
+        foreach (BuildingInstance building in productionSystem.Buildings)
         {
-            builder.AppendLine("ProductionSystem missing");
-            outputText.text = builder.ToString();
-            return;
-        }
-
-        builder.AppendLine("Building List");
-
-        for (int i = 0; i < productionSystem.Buildings.Count; i++)
-        {
-            BuildingInstance building = productionSystem.Buildings[i];
-
             if (building == null || building.Definition == null)
                 continue;
 
-            BuildingDefinition definition = building.Definition;
+            BuildingListItemUI item =
+                itemList.GetOrCreate(itemIndex);
 
-            string mainResourceText = GetMainInventoryText(building);
+            if (item == null)
+                continue;
 
-            builder.AppendLine($"{definition.displayName} | {mainResourceText}");
+            item.Initialize(building);
+            itemIndex++;
         }
 
-        outputText.text = builder.ToString();
-    }
+        itemList.HideFrom(itemIndex);
 
-    private string GetMainInventoryText(BuildingInstance building)
-    {
-        if (building.Inventory.Resources.Count == 0)
-            return "Inventory: Empty";
-
-        ResourceStack firstStack = building.Inventory.Resources[0];
-
-        if (firstStack == null || firstStack.resource == null)
-            return "Inventory: Empty";
-
-        return $"Inventory: {firstStack.resource.displayName} x{firstStack.amount}";
+        if (emptyText != null)
+            emptyText.SetActive(itemIndex == 0);
     }
 }

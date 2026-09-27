@@ -15,6 +15,7 @@ MonoBehaviour:
   resourceId: rice_plant
   displayName: "\u6C34\u7A3B"
   icon: {fileID: 0}
+  isEnabled: 1
   basePrice: 15
   recipe:
     inputResources: []

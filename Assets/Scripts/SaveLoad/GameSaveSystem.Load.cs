@@ -274,6 +274,23 @@ public sealed partial class GameSaveSystem
                 );
             }
         }
+        if (saveData.monthlyFinanceRecords != null)
+        {
+            foreach (
+                MonthlyFinanceRecordSaveData record
+                in saveData.monthlyFinanceRecords
+            )
+            {
+                if (record == null)
+                    continue;
+
+                productionSystem.RestoreMonthlyFinanceRecord(
+                    record.month,
+                    record.income,
+                    record.expense
+                );
+            }
+        }
     }
 
     private void RestoreRoutes(
@@ -304,16 +321,20 @@ public sealed partial class GameSaveSystem
                     continue;
                 }
 
-                ResourceDefinition resource =
-                    definitionCatalog.FindResource(savedRoute.resourceId);
+                ResourceDefinition resource = null;
 
-                if (resource == null)
+                if (!string.IsNullOrWhiteSpace(savedRoute.resourceId))
                 {
-                    Debug.LogWarning(
-                        $"Route resource not found: " +
-                        $"{savedRoute.resourceId}"
+                    resource = definitionCatalog.FindResource(
+                        savedRoute.resourceId
                     );
-                    continue;
+
+                    if (resource == null)
+                    {
+                        Debug.LogWarning(
+                            $"Route resource not found: {savedRoute.resourceId}"
+                        );
+                    }
                 }
 
                 restoredRoutes.Add(new TransportRouteDefinition

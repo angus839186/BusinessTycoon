@@ -12,23 +12,23 @@ public sealed partial class ProductionSystem : MonoBehaviour
     [SerializeField] private GameClock gameClock;
     [SerializeField] private LocationValueEvaluator locationEconomyEvaluator;
     [SerializeField] private int maxExpenseRecords = 50;
+
+    private readonly List<MonthlyFinanceRecord> monthlyFinanceRecords =
+    new List<MonthlyFinanceRecord>();
+
+    public IReadOnlyList<MonthlyFinanceRecord> MonthlyFinanceRecords =>
+        monthlyFinanceRecords;
     private readonly List<BuildingInstance> buildings = new List<BuildingInstance>();
     public IReadOnlyList<BuildingInstance> Buildings => buildings;
-
     private readonly List<IncomeRecord> incomeRecords = new List<IncomeRecord>();
-
     public IReadOnlyList<IncomeRecord> IncomeRecords => incomeRecords;
-
     private readonly BuildingInventory globalInventory = new BuildingInventory();
-
     public BuildingInventory GlobalInventory => globalInventory;
-
-
     private readonly List<ExpenseRecord> expenseRecords = new List<ExpenseRecord>();
-
     public IReadOnlyList<ExpenseRecord> ExpenseRecords => expenseRecords;
     public event Action DataChanged;
     public event Action FinanceChanged;
+    public event Action BuildingsChanged;
 
     private void Start()
     {
@@ -38,6 +38,11 @@ public sealed partial class ProductionSystem : MonoBehaviour
             gameClock = FindFirstObjectByType<GameClock>();
         if (locationEconomyEvaluator == null)
             locationEconomyEvaluator = FindFirstObjectByType<LocationValueEvaluator>();
+        if (gameClock != null)
+        {
+            GetOrCreateMonthlyFinanceRecord();
+            gameClock.MonthChanged += HandleMonthChanged;
+        }
         foreach (ResourceAmount resourceAmount in startingResources)
         {
             if (
@@ -72,5 +77,33 @@ public sealed partial class ProductionSystem : MonoBehaviour
             TickBuilding(building, Time.deltaTime);
         }
     }
+    private void OnDestroy()
+    {
+        if (gameClock != null)
+            gameClock.MonthChanged -= HandleMonthChanged;
+    }
+
+    private void HandleMonthChanged()
+    {
+        GetOrCreateMonthlyFinanceRecord();
+        MarkFinanceChanged();
+    }
+    private MonthlyFinanceRecord GetOrCreateMonthlyFinanceRecord()
+    {
+        int currentMonth = gameClock != null ? gameClock.Month : 1;
+
+        foreach (MonthlyFinanceRecord record in monthlyFinanceRecords)
+        {
+            if (record.month == currentMonth)
+                return record;
+        }
+
+        MonthlyFinanceRecord newRecord =
+            new MonthlyFinanceRecord(currentMonth);
+
+        monthlyFinanceRecords.Add(newRecord);
+        return newRecord;
+    }
+
 
 }

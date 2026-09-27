@@ -102,7 +102,11 @@ public sealed partial class ProductionSystem
             "Demolition"
         );
     }
-    public bool TryPay(ResourceAmount[] costs, string sourceName, string expenseType)
+    public bool TryPay(
+    ResourceAmount[] costs,
+    string sourceName,
+    string expenseType
+)
     {
         if (costs == null || costs.Length == 0)
             return true;
@@ -110,22 +114,34 @@ public sealed partial class ProductionSystem
         if (!globalInventory.HasEnough(costs))
             return false;
 
+        int expense = CalculateExpense(costs);
+
         globalInventory.TryConsumeAll(costs);
-        AddExpenseRecord(sourceName, expenseType, costs);
+
+        AddExpenseRecord(
+            sourceName,
+            expenseType,
+            costs,
+            expense
+        );
+
+        GetOrCreateMonthlyFinanceRecord().AddExpense(expense);
+
         MarkFinanceChanged();
         return true;
     }
     private void AddExpenseRecord(
-        string sourceName,
-        string expenseType,
-        ResourceAmount[] paidResources
-    )
+    string sourceName,
+    string expenseType,
+    ResourceAmount[] paidResources,
+    int expense
+)
     {
         ExpenseRecord record = new ExpenseRecord(
             sourceName,
             expenseType,
             FormatResources(paidResources),
-            CalculateExpense(paidResources),
+            expense,
             moneyResource != null ? globalInventory.GetAmount(moneyResource) : 0,
             gameClock != null ? gameClock.TotalGameMinutes : 0
         );
@@ -163,6 +179,7 @@ public sealed partial class ProductionSystem
 
         while (incomeRecords.Count > maxIncomeRecords)
             incomeRecords.RemoveAt(incomeRecords.Count - 1);
+        GetOrCreateMonthlyFinanceRecord().AddIncome(income);
         MarkFinanceChanged();
 
         if (logProduction)

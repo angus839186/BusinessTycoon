@@ -27,4 +27,6 @@ public sealed class GameSaveData
 
     public List<ExpenseRecordSaveData> expenseRecords =
         new List<ExpenseRecordSaveData>();
+    public List<MonthlyFinanceRecordSaveData> monthlyFinanceRecords =
+new List<MonthlyFinanceRecordSaveData>();
 }
