@@ -13,7 +13,33 @@ public enum BuildingCategory
     [InspectorName("倉管建築")]
     Storage
 }
-
+[GameDataTable(
+    "Buildings.tsv",
+    "Assets/Resources/Buildings",
+    "buildingId"
+)]
+[GameDataColumnAlias(
+    "producedResourceId",
+    "producedResource"
+)]
+[GameDataColumnAlias(
+    "processMonths",
+    "processInterval.months"
+)]
+[GameDataColumnAlias(
+    "processDays",
+    "processInterval.days"
+)]
+[GameDataColumnAlias(
+    "processHours",
+    "processInterval.hours"
+)]
+[GameDataColumnAlias(
+    "processMinutes",
+    "processInterval.minutes"
+)]
+[GameDataColumnAlias("iconPath", "icon")]
+[GameDataColumnAlias("enabled", "isEnabled")]
 [CreateAssetMenu(
     fileName = "BuildingDefinition",
     menuName = "WorldMap/Building Definition"

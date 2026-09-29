@@ -15,7 +15,9 @@ MonoBehaviour:
   buildingId: rice_processor
   displayName: "\u6C34\u7A3B\u52A0\u5DE5\u5EE0"
   category: 1
-  markerColor: {r: 1, g: 0.60160464, b: 0.1641509, a: 1}
+  icon: {fileID: 0}
+  isEnabled: 1
+  markerColor: {r: 1, g: 0.6, b: 0.16470589, a: 1}
   inputResources: []
   outputResources: []
   processInterval:
@@ -23,19 +25,12 @@ MonoBehaviour:
     days: 0
     hours: 0
     minutes: 5
-  icon: {fileID: 0}
   constructionCosts:
   - resource: {fileID: 11400000, guid: 01db9712564d5364983ddccef207a7f6, type: 2}
     amount: 100
   maintenanceCosts:
   - resource: {fileID: 11400000, guid: 01db9712564d5364983ddccef207a7f6, type: 2}
     amount: 5
-  maintenanceInterval:
-    months: 0
-    days: 1
-    hours: 0
-    minutes: 0
   producedResource: {fileID: 11400000, guid: 64a0455e3e60cb243a43ab78551c4e93, type: 2}
   workSpeedMultiplier: 1
   acceptsAnyResource: 0
-  storageLimits: []

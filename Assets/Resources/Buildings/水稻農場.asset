@@ -16,7 +16,8 @@ MonoBehaviour:
   displayName: "\u6C34\u7A3B\u8FB2\u5834"
   category: 0
   icon: {fileID: 0}
-  markerColor: {r: 0.9607843, g: 0.30106288, b: 0.28235292, a: 1}
+  isEnabled: 1
+  markerColor: {r: 0.9607843, g: 0.3019608, b: 0.28235295, a: 1}
   inputResources: []
   outputResources: []
   processInterval:
@@ -33,9 +34,3 @@ MonoBehaviour:
   producedResource: {fileID: 11400000, guid: 4aee68d833165d24eb264039427ea9f9, type: 2}
   workSpeedMultiplier: 1
   acceptsAnyResource: 0
-  storageLimits: []
-  maintenanceInterval:
-    months: 0
-    days: 0
-    hours: 1
-    minutes: 0

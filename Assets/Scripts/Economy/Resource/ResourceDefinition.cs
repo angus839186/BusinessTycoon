@@ -1,5 +1,12 @@
 using UnityEngine;
 
+[GameDataTable(
+    "Resources.tsv",
+    "Assets/Resources/Resource",
+    "resourceId"
+)]
+[GameDataColumnAlias("iconPath", "icon")]
+[GameDataColumnAlias("enabled", "isEnabled")]
 [CreateAssetMenu(
     fileName = "ResourceDefinition",
     menuName = "WorldMap/Resource Definition"

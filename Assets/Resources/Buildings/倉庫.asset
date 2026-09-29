@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: "\u5009\u5EAB"
   category: 3
   icon: {fileID: 0}
+  isEnabled: 1
   markerColor: {r: 1, g: 1, b: 1, a: 1}
   inputResources: []
   outputResources: []
@@ -33,9 +34,3 @@ MonoBehaviour:
   producedResource: {fileID: 0}
   workSpeedMultiplier: 1
   acceptsAnyResource: 1
-  storageLimits: []
-  maintenanceInterval:
-    months: 0
-    days: 0
-    hours: 0
-    minutes: 0

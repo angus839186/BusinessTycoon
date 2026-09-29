@@ -1,10 +1,14 @@
 using UnityEngine;
+using System;
 
 public sealed partial class BuildingPlacementController : MonoBehaviour
 {
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private BuildingDefinition selectedBuilding;
     [SerializeField] private BuildingDemolitionController demolitionController;
+
+    public event Action<BuildingDefinition> SelectedBuildingChanged;
+    public event Action<bool> PlacementModeChanged;
     public BuildingDefinition SelectedBuilding => selectedBuilding;
     private int nextBuildingInstanceIndex = 1;
     public int NextBuildingInstanceIndex => nextBuildingInstanceIndex;
@@ -24,7 +28,13 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
 
     public void SelectBuilding(BuildingDefinition building)
     {
+        if (selectedBuilding == building)
+        {
+            return;
+        }
+
         selectedBuilding = building;
+        SelectedBuildingChanged?.Invoke(selectedBuilding);
 
         if (selectedBuilding == null)
         {
@@ -32,24 +42,51 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"Building selected: {selectedBuilding.displayName}");
+        Debug.Log(
+            $"Building selected: {selectedBuilding.displayName}"
+        );
     }
 
     public void EnterPlacementMode()
     {
         if (selectedBuilding == null)
         {
-            Debug.Log("Cannot enter placement mode: no building selected.");
+            Debug.Log(
+                "Cannot enter placement mode: no building selected."
+            );
+
             return;
         }
 
-        isPlacementMode = true;
-        Debug.Log($"Placement mode entered: {selectedBuilding.displayName}");
-    }
+        if (isPlacementMode)
+        {
+            return;
+        }
 
+        if (demolitionController != null &&
+            demolitionController.IsDemolitionMode)
+        {
+            demolitionController.ExitDemolitionMode();
+        }
+
+        isPlacementMode = true;
+        PlacementModeChanged?.Invoke(true);
+
+        Debug.Log(
+            $"Placement mode entered: " +
+            $"{selectedBuilding.displayName}"
+        );
+    }
     public void ExitPlacementMode()
     {
+        if (!isPlacementMode)
+        {
+            return;
+        }
+
         isPlacementMode = false;
+        PlacementModeChanged?.Invoke(false);
+
         Debug.Log("Placement mode exited.");
     }
 

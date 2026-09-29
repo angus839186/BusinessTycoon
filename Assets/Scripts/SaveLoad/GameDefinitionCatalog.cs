@@ -10,6 +10,9 @@ public sealed class GameDefinitionCatalog : MonoBehaviour
     private readonly Dictionary<string, BuildingDefinition> buildingsById =
         new Dictionary<string, BuildingDefinition>(StringComparer.Ordinal);
 
+    public IEnumerable<BuildingDefinition> BuildingDefinitions =>
+buildingsById.Values;
+
     private readonly Dictionary<string, ResourceDefinition> resourcesById =
         new Dictionary<string, ResourceDefinition>(StringComparer.Ordinal);
     public IEnumerable<ResourceDefinition> ResourceDefinitions =>
