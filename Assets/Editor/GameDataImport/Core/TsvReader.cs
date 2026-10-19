@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-public static class GameDataTsvReader
+public static class TsvReader
 {
-    public static GameDataTsvTable Read(string sourcePath)
+    public static TsvTable Read(string sourcePath)
     {
         if (string.IsNullOrWhiteSpace(sourcePath))
         {
@@ -40,8 +40,8 @@ public static class GameDataTsvReader
 
         ValidateHeaders(headers, sourcePath);
 
-        List<GameDataTsvRow> rows =
-            new List<GameDataTsvRow>();
+        List<TsvRow> rows =
+            new List<TsvRow>();
 
         for (int index = 1; index < lines.Length; index++)
         {
@@ -76,14 +76,14 @@ public static class GameDataTsvReader
             }
 
             rows.Add(
-                new GameDataTsvRow(
+                new TsvRow(
                     lineNumber,
                     cells
                 )
             );
         }
 
-        return new GameDataTsvTable(
+        return new TsvTable(
             sourcePath,
             headers,
             rows

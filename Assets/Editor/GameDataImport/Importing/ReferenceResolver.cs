@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class GameDataObjectReferenceResolver
+public static class ReferenceResolver
 {
     public static bool TryResolve(
         Type definitionType,
@@ -19,12 +19,12 @@ public static class GameDataObjectReferenceResolver
             return true;
         }
 
-        GameDataTableSchema schema;
+        TableSchema schema;
 
         try
         {
             schema =
-                GameDataTableSchema.Create(definitionType);
+                TableSchema.Create(definitionType);
         }
         catch (Exception exception)
         {
@@ -32,11 +32,11 @@ public static class GameDataObjectReferenceResolver
             return false;
         }
 
-        GameDataImportResult lookupResult =
-            new GameDataImportResult();
+        ImportResult lookupResult =
+            new ImportResult();
 
         Dictionary<string, ScriptableObject> assets =
-            GameDataAssetRepository.LoadExisting(
+            AssetRepository.LoadExisting(
                 schema,
                 lookupResult
             );

@@ -15,24 +15,31 @@ public sealed partial class TransportSystem
             return ContainsResource(GetProcessingInputResources(definition), resource);
 
         if (definition.category == BuildingCategory.Commercial)
-            return ContainsResource(definition.inputResources, resource);
+        {
+            return
+                definition.saleAmount > 0 &&
+                definition.saleResource == resource;
+        }
 
         return false;
     }
 
     private ResourceAmount[] GetProcessingInputResources(BuildingDefinition definition)
     {
-        if (
-            definition != null &&
-            definition.producedResource != null &&
-            definition.producedResource.recipe != null &&
-            definition.producedResource.recipe.inputResources != null
-        )
-            return definition.producedResource.recipe.inputResources;
+        if (definition == null ||
+            definition.category !=
+                BuildingCategory.Processing ||
+            definition.producedResource == null ||
+            definition.producedResource.recipe == null)
+        {
+            return null;
+        }
 
-        return definition != null ? definition.inputResources : null;
+        return definition
+            .producedResource
+            .recipe
+            .inputResources;
     }
-
     private bool ContainsResource(ResourceAmount[] resources, ResourceDefinition resource)
     {
         if (resources == null || resource == null)

@@ -2,22 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 
-public static class GameDataSemanticValidatorRegistry
+public static class RuleRegistry
 {
-    private static Dictionary<Type, IGameDataSemanticValidator>
+    private static Dictionary<Type, IDataRules>
         validators;
 
     public static void Validate(
-        GameDataTableSchema schema,
-        GameDataTsvTable table,
-        GameDataValidationResult result
+        TableSchema schema,
+        TsvTable table,
+        ValidationResult result
     )
     {
         EnsureInitialized();
 
         if (validators.TryGetValue(
             schema.DefinitionType,
-            out IGameDataSemanticValidator validator
+            out IDataRules validator
         ))
         {
             validator.Validate(
@@ -36,11 +36,11 @@ public static class GameDataSemanticValidatorRegistry
         }
 
         validators =
-            new Dictionary<Type, IGameDataSemanticValidator>();
+            new Dictionary<Type, IDataRules>();
 
         foreach (Type validatorType in
                  TypeCache.GetTypesDerivedFrom<
-                     IGameDataSemanticValidator
+                     IDataRules
                  >())
         {
             if (validatorType.IsAbstract ||
@@ -49,9 +49,9 @@ public static class GameDataSemanticValidatorRegistry
                 continue;
             }
 
-            IGameDataSemanticValidator validator =
+            IDataRules validator =
                 Activator.CreateInstance(validatorType)
-                as IGameDataSemanticValidator;
+                as IDataRules;
 
             if (validator == null)
             {

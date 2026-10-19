@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public static class GameDataScriptableObjectImporter
+public static class DefinitionImporter
 {
-    public static GameDataImportResult Import(
-        GameDataTableSchema schema,
-        GameDataTsvTable table
+    public static ImportResult Import(
+        TableSchema schema,
+        TsvTable table
     )
     {
-        GameDataImportResult result =
-            new GameDataImportResult();
+        ImportResult result =
+            new ImportResult();
 
-        GameDataValidationResult validation =
-            GameDataTableValidator.Validate(schema, table);
+        ValidationResult validation =
+            TableValidator.Validate(schema, table);
 
         if (!validation.IsValid)
         {
-            foreach (GameDataValidationMessage message
+            foreach (ValidationMessage message
                      in validation.Messages)
             {
                 if (message.Severity ==
@@ -37,13 +37,13 @@ public static class GameDataScriptableObjectImporter
         StringComparer.OrdinalIgnoreCase
     );
 
-        foreach (GameDataTsvRow row in table.Rows)
+        foreach (TsvRow row in table.Rows)
         {
             sourceIds.Add(row.GetValue(idHeader));
         }
 
         Dictionary<string, ScriptableObject> existingAssets =
-            GameDataAssetRepository.LoadExisting(
+            AssetRepository.LoadExisting(
                 schema,
                 result
             );
@@ -61,7 +61,7 @@ public static class GameDataScriptableObjectImporter
             $"Import {schema.DefinitionType.Name}"
         );
 
-        foreach (GameDataTsvRow row in table.Rows)
+        foreach (TsvRow row in table.Rows)
         {
             string id = row.GetValue(idHeader);
 
@@ -110,7 +110,7 @@ public static class GameDataScriptableObjectImporter
 
             if (isNew)
             {
-                GameDataAssetRepository.CreateAsset(
+                AssetRepository.CreateAsset(
                     schema,
                     asset,
                     id
@@ -143,9 +143,9 @@ public static class GameDataScriptableObjectImporter
     }
 
     private static bool Preflight(
-        GameDataTableSchema schema,
-        GameDataTsvTable table,
-        GameDataImportResult result
+        TableSchema schema,
+        TsvTable table,
+        ImportResult result
     )
     {
         ScriptableObject temporaryAsset =
@@ -155,7 +155,7 @@ public static class GameDataScriptableObjectImporter
 
         try
         {
-            foreach (GameDataTsvRow row in table.Rows)
+            foreach (TsvRow row in table.Rows)
             {
                 SerializedObject serializedAsset =
                     new SerializedObject(temporaryAsset);
@@ -186,15 +186,15 @@ public static class GameDataScriptableObjectImporter
 
     private static bool TryWriteRow(
         SerializedObject serializedAsset,
-        GameDataTableSchema schema,
-        GameDataTsvTable table,
-        GameDataTsvRow row,
-        GameDataImportResult result
+        TableSchema schema,
+        TsvTable table,
+        TsvRow row,
+        ImportResult result
     )
     {
         foreach (string header in table.Headers)
         {
-            if (!GameDataSerializedPropertyWriter.TryWrite(
+            if (!PropertyWriter.TryWrite(
                 serializedAsset,
                 schema,
                 header,
@@ -214,10 +214,10 @@ public static class GameDataScriptableObjectImporter
         return true;
     }
     private static void AddOrphanWarnings(
-        GameDataTableSchema schema,
+        TableSchema schema,
         Dictionary<string, ScriptableObject> existingAssets,
         HashSet<string> sourceIds,
-        GameDataImportResult result
+        ImportResult result
     )
     {
         foreach (string existingId in existingAssets.Keys)
@@ -235,8 +235,8 @@ public static class GameDataScriptableObjectImporter
         }
     }
     private static string FindIdHeader(
-        GameDataTableSchema schema,
-        GameDataTsvTable table
+        TableSchema schema,
+        TsvTable table
     )
     {
         foreach (string header in table.Headers)

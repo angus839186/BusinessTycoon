@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-public static class GameDataFieldPathResolver
+public static class FieldResolver
 {
     private const BindingFlags FieldFlags =
         BindingFlags.Instance |

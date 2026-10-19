@@ -4,14 +4,14 @@ public enum GameDataValidationSeverity
     Error
 }
 
-public class GameDataValidationMessage
+public class ValidationMessage
 {
     public GameDataValidationSeverity Severity { get; }
     public int LineNumber { get; }
     public string Header { get; }
     public string Message { get; }
 
-    public GameDataValidationMessage(
+    public ValidationMessage(
         GameDataValidationSeverity severity,
         int lineNumber,
         string header,

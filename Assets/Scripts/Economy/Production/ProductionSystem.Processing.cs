@@ -18,7 +18,6 @@ public sealed partial class ProductionSystem
 )
             return;
 
-        ResourceAmount[] inputResources = GetInputResources(definition);
         ResourceAmount[] outputResources = GetOutputResources(definition);
 
         if (
@@ -26,15 +25,14 @@ public sealed partial class ProductionSystem
             (outputResources == null || outputResources.Length == 0)
         )
             return;
-
-        if (
-    (definition.category == BuildingCategory.Processing ||
-     definition.category == BuildingCategory.Commercial) &&
-    !building.Inventory.HasEnough(inputResources)
-)
+        if (!HasEnoughInput(building, definition))
         {
             if (gameClock != null)
-                building.SetLastProcessGameMinutes(gameClock.TotalGameMinutes);
+            {
+                building.SetLastProcessGameMinutes(
+                    gameClock.TotalGameMinutes
+                );
+            }
 
             return;
         }
@@ -55,12 +53,10 @@ public sealed partial class ProductionSystem
 
         building.SetLastProcessGameMinutes(gameClock.TotalGameMinutes);
 
-        if (
-            (definition.category == BuildingCategory.Processing ||
-             definition.category == BuildingCategory.Commercial) &&
-            !building.Inventory.TryConsumeAll(inputResources)
-        )
+        if (!TryConsumeInput(building, definition))
+        {
             return;
+        }
 
         if (definition.category == BuildingCategory.Commercial)
         {
@@ -70,38 +66,118 @@ public sealed partial class ProductionSystem
 
         ProduceResources(building, definition, outputResources);
     }
-    private ResourceAmount[] GetInputResources(BuildingDefinition definition)
+
+    private bool HasEnoughInput(
+    BuildingInstance building,
+    BuildingDefinition definition
+)
     {
-        if (definition == null)
-            return null;
+        if (building == null ||
+            definition == null)
+        {
+            return false;
+        }
 
-        if (
-            definition.category == BuildingCategory.Processing &&
-            definition.producedResource != null &&
-            definition.producedResource.recipe != null &&
-            definition.producedResource.recipe.inputResources != null
-        )
-            return definition.producedResource.recipe.inputResources;
+        if (definition.category == BuildingCategory.Processing)
+        {
+            ResourceAmount[] inputResources =
+                GetInputResources(definition);
 
-        return definition.inputResources;
+            return
+                inputResources != null &&
+                inputResources.Length > 0 &&
+                building.Inventory.HasEnough(
+                    inputResources
+                );
+        }
+
+        if (definition.category ==
+            BuildingCategory.Commercial)
+        {
+            return
+                definition.saleResource != null &&
+                definition.saleAmount > 0 &&
+                building.Inventory.GetAmount(
+                    definition.saleResource
+                ) >= definition.saleAmount;
+        }
+
+        return true;
     }
 
-    private ResourceAmount[] GetOutputResources(BuildingDefinition definition)
+    private bool TryConsumeInput(
+        BuildingInstance building,
+        BuildingDefinition definition
+    )
     {
-        if (definition == null)
+        if (building == null ||
+            definition == null)
+        {
+            return false;
+        }
+
+        if (definition.category == BuildingCategory.Processing)
+        {
+            ResourceAmount[] inputResources =
+                GetInputResources(definition);
+
+            return
+                inputResources != null &&
+                inputResources.Length > 0 &&
+                building.Inventory.TryConsumeAll(
+                    inputResources
+                );
+        }
+
+        if (definition.category ==
+            BuildingCategory.Commercial)
+        {
+            return building.Inventory.TryConsume(
+                definition.saleResource,
+                definition.saleAmount
+            );
+        }
+
+        return true;
+    }
+    private ResourceAmount[] GetInputResources(
+    BuildingDefinition definition
+)
+    {
+        if (definition == null ||
+            definition.category !=
+                BuildingCategory.Processing ||
+            definition.producedResource == null ||
+            definition.producedResource.recipe == null)
+        {
             return null;
+        }
 
-        if (
-            (definition.category == BuildingCategory.Resource ||
-             definition.category == BuildingCategory.Processing) &&
-            definition.producedResource != null &&
-            definition.producedResource.recipe != null &&
-            definition.producedResource.recipe.outputResources != null &&
-            definition.producedResource.recipe.outputResources.Length > 0
-        )
-            return definition.producedResource.recipe.outputResources;
+        return definition
+            .producedResource
+            .recipe
+            .inputResources;
+    }
 
-        return definition.outputResources;
+    private ResourceAmount[] GetOutputResources(
+    BuildingDefinition definition
+)
+    {
+        if (definition == null ||
+            (definition.category !=
+            BuildingCategory.Resource &&
+            definition.category !=
+            BuildingCategory.Processing) ||
+            definition.producedResource == null ||
+            definition.producedResource.recipe == null)
+        {
+            return null;
+        }
+
+        return definition
+            .producedResource
+            .recipe
+            .outputResources;
     }
 
     private double GetProcessIntervalMinutes(BuildingInstance building)
@@ -158,7 +234,7 @@ public sealed partial class ProductionSystem
         )
             return false;
 
-        return !building.Inventory.HasEnough(GetInputResources(definition));
+        return !HasEnoughInput(building, definition);
     }
 
     private void ProduceResources(
@@ -189,6 +265,4 @@ public sealed partial class ProductionSystem
         if (changed)
             MarkDataChanged();
     }
-    // IsWaitingForInput
-    // ProduceResources
 }

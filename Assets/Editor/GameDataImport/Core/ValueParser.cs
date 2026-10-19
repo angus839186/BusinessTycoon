@@ -3,7 +3,7 @@ using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 
-public static class GameDataValueConverter
+public static class ValueParser
 {
     public static bool TryConvert(
         string rawValue,
@@ -131,7 +131,7 @@ public static class GameDataValueConverter
 
         if (typeof(ScriptableObject).IsAssignableFrom(targetType))
         {
-            if (GameDataObjectReferenceResolver.TryResolve(
+            if (ReferenceResolver.TryResolve(
                 targetType,
                 rawValue,
                 out UnityEngine.Object asset,

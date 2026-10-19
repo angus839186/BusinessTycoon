@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 
-public static class RecipeDefinitionImporter
+public static class RecipeImporter
 {
     private const string ResourceAssetFolder =
         "Assets/Resources/Resource";
 
     public static bool Import(
-        IReadOnlyList<RecipeImportRow> rows,
+        IReadOnlyList<RecipeRow> rows,
         out List<string> messages,
         out List<string> errors
     )
@@ -20,7 +20,7 @@ public static class RecipeDefinitionImporter
         Dictionary<string, ResourceDefinition> definitions =
             LoadDefinitions(errors);
 
-        foreach (RecipeImportRow row in rows)
+        foreach (RecipeRow row in rows)
         {
             if (!definitions.ContainsKey(row.OwnerResourceId))
             {
@@ -39,15 +39,15 @@ public static class RecipeDefinitionImporter
             }
         }
 
-        IEnumerable<IGrouping<string, RecipeImportRow>> groups =
+        IEnumerable<IGrouping<string, RecipeRow>> groups =
             rows.GroupBy(
                 row => row.OwnerResourceId,
                 StringComparer.Ordinal
             );
 
-        foreach (IGrouping<string, RecipeImportRow> group in groups)
+        foreach (IGrouping<string, RecipeRow> group in groups)
         {
-            RecipeImportRow[] enabledRows =
+            RecipeRow[] enabledRows =
                 group.Where(row => row.Enabled).ToArray();
 
             if (enabledRows.Length > 0 &&
@@ -64,7 +64,7 @@ public static class RecipeDefinitionImporter
         if (errors.Count > 0)
             return false;
 
-        foreach (IGrouping<string, RecipeImportRow> group in groups)
+        foreach (IGrouping<string, RecipeRow> group in groups)
         {
             ResourceDefinition owner = definitions[group.Key];
 
@@ -99,7 +99,7 @@ public static class RecipeDefinitionImporter
     }
 
     private static ResourceAmount[] BuildAmounts(
-        IEnumerable<RecipeImportRow> rows,
+        IEnumerable<RecipeRow> rows,
         RecipeIoType ioType,
         Dictionary<string, ResourceDefinition> definitions
     )

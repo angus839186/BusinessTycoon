@@ -16,11 +16,17 @@ public enum BuildingCategory
 [GameDataTable(
     "Buildings.tsv",
     "Assets/Resources/Buildings",
-    "buildingId"
+    "buildingId",
+    DisplayName = "Buildings",
+    ImportOrder = 200
 )]
 [GameDataColumnAlias(
     "producedResourceId",
     "producedResource"
+)]
+[GameDataColumnAlias(
+    "saleResourceId",
+    "saleResource"
 )]
 [GameDataColumnAlias(
     "processMonths",
@@ -46,31 +52,51 @@ public enum BuildingCategory
 )]
 public sealed class BuildingDefinition : ScriptableObject
 {
+    [GameDataColumn]
     [InspectorName("建築 ID")]
     public string buildingId;
-    [InspectorName("顯示名稱")] public string displayName;
-    [InspectorName("建築類型")] public BuildingCategory category;
+
+    [GameDataColumn]
+    [InspectorName("顯示名稱")]
+    public string displayName;
+
+    [GameDataColumn]
+    [InspectorName("建築類型")]
+    public BuildingCategory category;
+
+    [GameDataColumn(AllowEmpty = true)]
     public Sprite icon;
+
+    [GameDataColumn]
     public bool isEnabled = true;
+
+    [GameDataColumn]
     public Color markerColor = Color.white;
-    [Header("輸入")]
-    public ResourceAmount[] inputResources;
 
-    [Header("輸出")]
-    public ResourceAmount[] outputResources;
-
+    [Header("生產時間")]
     public GameTimeInterval processInterval;
-
 
     [Header("成本")]
     public ResourceAmount[] constructionCosts;
     public ResourceAmount[] maintenanceCosts;
 
+
     [Header("生產")]
+    [GameDataColumn(AllowEmpty = true)]
     public ResourceDefinition producedResource;
+
+    [GameDataColumn(MinValue = 0)]
     public float workSpeedMultiplier = 1f;
 
+    [Header("Commercial")]
+    [GameDataColumn(AllowEmpty = true)]
+    public ResourceDefinition saleResource;
+
+    [GameDataColumn(MinValue = 0)]
+    public int saleAmount = 1;
+
     [Header("庫存")]
+    [GameDataColumn]
     public bool acceptsAnyResource;
 
 }

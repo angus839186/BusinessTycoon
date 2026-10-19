@@ -2,16 +2,16 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-public class GameDataTableEditorPanel
+public class DataTablePanel : IDataPanel
 {
     private const float ColumnWidth = 140f;
 
     private readonly Type definitionType;
 
-    private GameDataTableSchema schema;
-    private GameDataTsvTable table;
-    private GameDataValidationResult validationResult;
-    private GameDataImportResult importResult;
+    private TableSchema schema;
+    private TsvTable table;
+    private ValidationResult validationResult;
+    private ImportResult importResult;
 
     private Vector2 scrollPosition;
     private string loadError;
@@ -30,10 +30,40 @@ public class GameDataTableEditorPanel
 
     public int ErrorCount =>
         validationResult?.ErrorCount ?? 0;
+    public string DisplayName { get; }
+    public int ImportOrder { get; }
+    public string FilePath { get; }
 
-    public GameDataTableEditorPanel(Type definitionType)
+    public DataTablePanel(Type definitionType)
     {
         this.definitionType = definitionType;
+
+        GameDataTableAttribute tableAttribute =
+            Attribute.GetCustomAttribute(
+                definitionType,
+                typeof(GameDataTableAttribute)
+            ) as GameDataTableAttribute;
+
+        if (tableAttribute == null)
+        {
+            DisplayName = definitionType.Name;
+            ImportOrder = 0;
+            FilePath = string.Empty;
+            return;
+        }
+
+        DisplayName =
+            string.IsNullOrWhiteSpace(
+                tableAttribute.DisplayName
+            )
+                ? definitionType.Name
+                : tableAttribute.DisplayName;
+
+        ImportOrder = tableAttribute.ImportOrder;
+
+        FilePath =
+            $"Assets/GameData/Source/" +
+            tableAttribute.FileName;
     }
 
     public void Validate()
@@ -83,16 +113,13 @@ public class GameDataTableEditorPanel
         try
         {
             schema =
-                GameDataTableSchema.Create(definitionType);
+                TableSchema.Create(definitionType);
 
-            string sourcePath =
-                $"Assets/GameData/Source/{schema.FileName}";
-
-            table = GameDataTsvReader.Read(sourcePath);
+            table = TsvReader.Read(FilePath);
             importResult = null;
 
             validationResult =
-                GameDataTableValidator.Validate(schema, table);
+                TableValidator.Validate(schema, table);
 
             loadError = string.Empty;
         }
@@ -186,7 +213,7 @@ public class GameDataTableEditorPanel
             MessageType.Error
         );
 
-        foreach (GameDataValidationMessage message
+        foreach (ValidationMessage message
                  in validationResult.Messages)
         {
             MessageType messageType =
@@ -237,7 +264,7 @@ public class GameDataTableEditorPanel
 
     private void DrawRow(int rowIndex)
     {
-        GameDataTsvRow row = table.Rows[rowIndex];
+        TsvRow row = table.Rows[rowIndex];
 
         EditorGUILayout.BeginHorizontal();
 
@@ -259,7 +286,7 @@ public class GameDataTableEditorPanel
     private void ValidateTable()
     {
         validationResult =
-            GameDataTableValidator.Validate(schema, table);
+            TableValidator.Validate(schema, table);
     }
 
 
@@ -295,7 +322,7 @@ public class GameDataTableEditorPanel
             }
         }
         importResult =
-            GameDataScriptableObjectImporter.Import(
+            DefinitionImporter.Import(
                 schema,
                 table
             );

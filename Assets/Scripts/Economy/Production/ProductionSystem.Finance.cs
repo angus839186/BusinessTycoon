@@ -157,29 +157,61 @@ public sealed partial class ProductionSystem
     BuildingDefinition definition
 )
     {
-        if (moneyResource == null)
+        if (moneyResource == null ||
+            definition == null ||
+            definition.saleResource == null ||
+            definition.saleAmount <= 0)
+        {
             return;
+        }
 
-        int income = CalculateSaleIncome(building, definition.inputResources);
+        ResourceDefinition soldResource =
+            definition.saleResource;
+
+        int soldAmount =
+            definition.saleAmount;
+
+        int income = CalculateSaleIncome(
+            building,
+            soldResource,
+            soldAmount
+        );
 
         if (income <= 0)
+        {
             return;
+        }
 
-        globalInventory.Add(moneyResource, income);
+        globalInventory.Add(
+            moneyResource,
+            income
+        );
+
+        string soldResources =
+            $"{soldResource.displayName} x{soldAmount}";
 
         IncomeRecord record = new IncomeRecord(
             definition.displayName,
-            FormatResources(definition.inputResources),
+            soldResources,
             income,
             globalInventory.GetAmount(moneyResource),
-            gameClock != null ? gameClock.TotalGameMinutes : 0
+            gameClock != null
+                ? gameClock.TotalGameMinutes
+                : 0
         );
 
         incomeRecords.Insert(0, record);
 
         while (incomeRecords.Count > maxIncomeRecords)
-            incomeRecords.RemoveAt(incomeRecords.Count - 1);
-        GetOrCreateMonthlyFinanceRecord().AddIncome(income);
+        {
+            incomeRecords.RemoveAt(
+                incomeRecords.Count - 1
+            );
+        }
+
+        GetOrCreateMonthlyFinanceRecord()
+            .AddIncome(income);
+
         MarkFinanceChanged();
 
         if (logProduction)
@@ -187,34 +219,41 @@ public sealed partial class ProductionSystem
             Debug.Log(
                 $"Sold: Building={definition.displayName}, " +
                 $"Resources={record.soldResources}, " +
-                $"Income={income}, Money={globalInventory.GetAmount(moneyResource)}"
+                $"Income={income}, " +
+                $"Money={globalInventory.GetAmount(moneyResource)}"
             );
         }
     }
 
     private int CalculateSaleIncome(
     BuildingInstance building,
-    ResourceAmount[] resources
+    ResourceDefinition resource,
+    int amount
 )
     {
-        if (resources == null)
-            return 0;
-
-        int total = 0;
-
-        foreach (ResourceAmount resourceAmount in resources)
+        if (resource == null ||
+            amount <= 0)
         {
-            if (resourceAmount == null || resourceAmount.resource == null || resourceAmount.amount <= 0)
-                continue;
-
-            total += resourceAmount.resource.basePrice * resourceAmount.amount;
+            return 0;
         }
 
-        float multiplier = gameRules != null ? gameRules.CommercialSalePriceMultiplier : 1f;
-        LocationValueModifiers modifiers = GetLocationModifiers(building);
-        multiplier *= modifiers.commercialSalePriceMultiplier;
+        int baseIncome =
+            resource.basePrice * amount;
 
-        return Mathf.RoundToInt(total * multiplier);
+        float multiplier =
+            gameRules != null
+                ? gameRules.CommercialSalePriceMultiplier
+                : 1f;
+
+        LocationValueModifiers modifiers =
+            GetLocationModifiers(building);
+
+        multiplier *=
+            modifiers.commercialSalePriceMultiplier;
+
+        return Mathf.RoundToInt(
+            baseIncome * multiplier
+        );
     }
 
     private ResourceAmount[] CalculateModifiedCosts(ResourceAmount[] baseCosts, float multiplier)

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-public class GameDataValidationResult
+public class ValidationResult
 {
-    public IReadOnlyList<GameDataValidationMessage> Messages =>
+    public IReadOnlyList<ValidationMessage> Messages =>
         messages;
 
     public int ErrorCount { get; private set; }
@@ -10,8 +10,8 @@ public class GameDataValidationResult
 
     public bool IsValid => ErrorCount == 0;
 
-    private readonly List<GameDataValidationMessage> messages =
-        new List<GameDataValidationMessage>();
+    private readonly List<ValidationMessage> messages =
+        new List<ValidationMessage>();
 
     public void AddError(
         int lineNumber,
@@ -20,7 +20,7 @@ public class GameDataValidationResult
     )
     {
         messages.Add(
-            new GameDataValidationMessage(
+            new ValidationMessage(
                 GameDataValidationSeverity.Error,
                 lineNumber,
                 header,
@@ -38,7 +38,7 @@ public class GameDataValidationResult
     )
     {
         messages.Add(
-            new GameDataValidationMessage(
+            new ValidationMessage(
                 GameDataValidationSeverity.Warning,
                 lineNumber,
                 header,

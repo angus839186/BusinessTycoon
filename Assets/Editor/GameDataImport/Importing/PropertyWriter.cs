@@ -3,11 +3,11 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-public static class GameDataSerializedPropertyWriter
+public static class PropertyWriter
 {
     public static bool TryWrite(
         SerializedObject serializedObject,
-        GameDataTableSchema schema,
+        TableSchema schema,
         string header,
         string rawValue,
         out string error
@@ -18,7 +18,7 @@ public static class GameDataSerializedPropertyWriter
         string fieldPath =
             schema.ResolveFieldPath(header);
 
-        if (!GameDataFieldPathResolver.TryResolve(
+        if (!FieldResolver.TryResolve(
             schema.DefinitionType,
             fieldPath,
             out FieldInfo field,
@@ -47,7 +47,7 @@ public static class GameDataSerializedPropertyWriter
             return true;
         }
 
-        if (!GameDataValueConverter.TryConvert(
+        if (!ValueParser.TryConvert(
             rawValue,
             field.FieldType,
             out object convertedValue,

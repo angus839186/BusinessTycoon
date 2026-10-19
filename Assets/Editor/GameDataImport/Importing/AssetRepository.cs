@@ -4,11 +4,11 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public static class GameDataAssetRepository
+public static class AssetRepository
 {
     public static Dictionary<string, ScriptableObject> LoadExisting(
-        GameDataTableSchema schema,
-        GameDataImportResult result
+        TableSchema schema,
+        ImportResult result
     )
     {
         Dictionary<string, ScriptableObject> assets =
@@ -83,7 +83,7 @@ public static class GameDataAssetRepository
     }
 
     public static void CreateAsset(
-        GameDataTableSchema schema,
+        TableSchema schema,
         ScriptableObject asset,
         string id
     )

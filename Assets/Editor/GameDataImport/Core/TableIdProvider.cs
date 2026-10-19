@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public static class GameDataTableIdProvider
+public static class TableIdProvider
 {
     public static bool TryLoadIds(
         Type definitionType,
@@ -17,21 +17,21 @@ public static class GameDataTableIdProvider
 
         try
         {
-            GameDataTableSchema schema =
-                GameDataTableSchema.Create(definitionType);
+            TableSchema schema =
+                TableSchema.Create(definitionType);
 
             string sourcePath =
                 $"Assets/GameData/Source/{schema.FileName}";
 
-            GameDataTsvTable table =
-                GameDataTsvReader.Read(sourcePath);
+            TsvTable table =
+                TsvReader.Read(sourcePath);
 
-            GameDataValidationResult validation =
-                GameDataTableValidator.Validate(schema, table);
+            ValidationResult validation =
+                TableValidator.Validate(schema, table);
 
             if (!validation.IsValid)
             {
-                foreach (GameDataValidationMessage message
+                foreach (ValidationMessage message
                          in validation.Messages)
                 {
                     if (message.Severity ==
@@ -46,7 +46,7 @@ public static class GameDataTableIdProvider
 
             string idHeader = FindIdHeader(schema, table);
 
-            foreach (GameDataTsvRow row in table.Rows)
+            foreach (TsvRow row in table.Rows)
             {
                 ids.Add(row.GetValue(idHeader));
             }
@@ -61,8 +61,8 @@ public static class GameDataTableIdProvider
     }
 
     private static string FindIdHeader(
-        GameDataTableSchema schema,
-        GameDataTsvTable table
+        TableSchema schema,
+        TsvTable table
     )
     {
         foreach (string header in table.Headers)

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class GameDataImportResult
+public class ImportResult
 {
     public IReadOnlyList<string> Messages => messages;
     public IReadOnlyList<string> Errors => errors;

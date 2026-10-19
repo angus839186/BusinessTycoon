@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class RecipeTablePanel
+public class RecipePanel : IDataPanel
 {
     private const string SourcePath =
         "Assets/GameData/Source/Recipes.tsv";
 
-    private List<RecipeImportRow> rows =
-        new List<RecipeImportRow>();
+    private List<RecipeRow> rows =
+        new List<RecipeRow>();
 
     private List<string> errors =
         new List<string>();
@@ -27,6 +27,10 @@ public class RecipeTablePanel
 
     public int RowCount => rows.Count;
     public int ErrorCount => errors.Count;
+
+    public string DisplayName => "Recipes";
+    public int ImportOrder => 100;
+    public string FilePath => SourcePath;
 
     public void Draw()
     {
@@ -53,7 +57,7 @@ public class RecipeTablePanel
     {
         importMessages.Clear();
 
-        RecipeTsvValidator.Validate(
+        RecipeValidator.Validate(
             SourcePath,
             out rows,
             out errors
@@ -87,7 +91,7 @@ public class RecipeTablePanel
             }
         }
 
-        bool succeeded = RecipeDefinitionImporter.Import(
+        bool succeeded = RecipeImporter.Import(
             rows,
             out importMessages,
             out List<string> importErrors
@@ -243,7 +247,7 @@ public class RecipeTablePanel
 
         EditorGUILayout.EndHorizontal();
 
-        foreach (RecipeImportRow row in rows)
+        foreach (RecipeRow row in rows)
         {
             DrawRow(row);
         }
@@ -251,7 +255,7 @@ public class RecipeTablePanel
         EditorGUILayout.EndScrollView();
     }
 
-    private static void DrawRow(RecipeImportRow row)
+    private static void DrawRow(RecipeRow row)
     {
         EditorGUILayout.BeginHorizontal();
 

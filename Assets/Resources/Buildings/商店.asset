@@ -18,10 +18,6 @@ MonoBehaviour:
   icon: {fileID: 0}
   isEnabled: 1
   markerColor: {r: 1, g: 0.9137255, b: 0, a: 1}
-  inputResources:
-  - resource: {fileID: 11400000, guid: 64a0455e3e60cb243a43ab78551c4e93, type: 2}
-    amount: 1
-  outputResources: []
   processInterval:
     months: 0
     days: 0
@@ -31,4 +27,6 @@ MonoBehaviour:
   maintenanceCosts: []
   producedResource: {fileID: 0}
   workSpeedMultiplier: 1
+  saleResource: {fileID: 11400000, guid: 64a0455e3e60cb243a43ab78551c4e93, type: 2}
+  saleAmount: 1
   acceptsAnyResource: 0

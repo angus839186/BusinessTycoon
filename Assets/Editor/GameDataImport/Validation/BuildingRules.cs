@@ -2,77 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-public class BuildingDefinitionSemanticValidator :
-    IGameDataSemanticValidator
+public class BuildingRules :
+    IDataRules
 {
-    private static readonly string[] RequiredFieldPaths =
-    {
-        "displayName",
-        "category",
-        "producedResource",
-        "processInterval.months",
-        "processInterval.days",
-        "processInterval.hours",
-        "processInterval.minutes",
-        "workSpeedMultiplier",
-        "acceptsAnyResource",
-        "markerColor",
-        "icon",
-        "isEnabled"
-    };
 
     public Type DefinitionType =>
         typeof(BuildingDefinition);
 
     public void Validate(
-        GameDataTableSchema schema,
-        GameDataTsvTable table,
-        GameDataValidationResult result
-    )
+    TableSchema schema,
+    TsvTable table,
+    ValidationResult result
+)
     {
         Dictionary<string, string> headers =
             BuildHeaderMap(schema, table);
 
-        foreach (string fieldPath in RequiredFieldPaths)
-        {
-            if (!headers.ContainsKey(fieldPath))
-            {
-                result.AddError(
-                    0,
-                    fieldPath,
-                    "Required column was not found."
-                );
-            }
-        }
-
-        if (!result.IsValid)
-        {
-            return;
-        }
-
-        foreach (GameDataTsvRow row in table.Rows)
+        foreach (TsvRow row in table.Rows)
         {
             ValidateRow(row, headers, result);
         }
     }
 
     private static void ValidateRow(
-        GameDataTsvRow row,
+        TsvRow row,
         Dictionary<string, string> headers,
-        GameDataValidationResult result
+        ValidationResult result
     )
     {
-        string displayName =
-            GetValue(row, headers, "displayName");
-
-        if (string.IsNullOrWhiteSpace(displayName))
-        {
-            result.AddError(
-                row.LineNumber,
-                headers["displayName"],
-                "Display name cannot be empty."
-            );
-        }
 
         Enum.TryParse(
             GetValue(row, headers, "category"),
@@ -82,6 +39,12 @@ public class BuildingDefinitionSemanticValidator :
 
         string producedResourceId =
             GetValue(row, headers, "producedResource");
+
+        string saleResourceId =
+            GetValue(row, headers, "saleResource");
+
+        int saleAmount =
+            ParseInt(row, headers, "saleAmount");
 
         int months = ParseInt(
             row,
@@ -107,20 +70,6 @@ public class BuildingDefinitionSemanticValidator :
             "processInterval.minutes"
         );
 
-        bool timeIsNonNegative =
-            months >= 0 &&
-            days >= 0 &&
-            hours >= 0 &&
-            minutes >= 0;
-
-        if (!timeIsNonNegative)
-        {
-            result.AddError(
-                row.LineNumber,
-                headers["processInterval.months"],
-                "Production time values cannot be negative."
-            );
-        }
 
         float speed = float.Parse(
             GetValue(
@@ -182,6 +131,47 @@ public class BuildingDefinitionSemanticValidator :
             );
         }
 
+        bool needsSaleResource =
+    category == BuildingCategory.Commercial;
+
+        if (needsSaleResource &&
+            string.IsNullOrWhiteSpace(saleResourceId))
+        {
+            result.AddError(
+                row.LineNumber,
+                headers["saleResource"],
+                "Commercial buildings require a sale resource."
+            );
+        }
+
+        if (needsSaleResource && saleAmount <= 0)
+        {
+            result.AddError(
+                row.LineNumber,
+                headers["saleAmount"],
+                "Commercial sale amount must be greater than 0."
+            );
+        }
+
+        if (!needsSaleResource &&
+            !string.IsNullOrWhiteSpace(saleResourceId))
+        {
+            result.AddError(
+                row.LineNumber,
+                headers["saleResource"],
+                "Only commercial buildings can define a sale resource."
+            );
+        }
+
+        if (!needsSaleResource && saleAmount != 0)
+        {
+            result.AddError(
+                row.LineNumber,
+                headers["saleAmount"],
+                "Non-commercial buildings must use sale amount 0."
+            );
+        }
+
         GameTimeInterval interval =
             new GameTimeInterval
             {
@@ -191,9 +181,7 @@ public class BuildingDefinitionSemanticValidator :
                 minutes = minutes
             };
 
-        if (category != BuildingCategory.Storage &&
-            timeIsNonNegative &&
-            interval.ToMinutes() <= 0)
+        if (category != BuildingCategory.Storage && interval.ToMinutes() <= 0)
         {
             result.AddError(
                 row.LineNumber,
@@ -204,8 +192,8 @@ public class BuildingDefinitionSemanticValidator :
     }
 
     private static Dictionary<string, string> BuildHeaderMap(
-        GameDataTableSchema schema,
-        GameDataTsvTable table
+        TableSchema schema,
+        TsvTable table
     )
     {
         Dictionary<string, string> result =
@@ -223,7 +211,7 @@ public class BuildingDefinitionSemanticValidator :
     }
 
     private static string GetValue(
-        GameDataTsvRow row,
+        TsvRow row,
         Dictionary<string, string> headers,
         string fieldPath
     )
@@ -232,7 +220,7 @@ public class BuildingDefinitionSemanticValidator :
     }
 
     private static int ParseInt(
-        GameDataTsvRow row,
+        TsvRow row,
         Dictionary<string, string> headers,
         string fieldPath
     )

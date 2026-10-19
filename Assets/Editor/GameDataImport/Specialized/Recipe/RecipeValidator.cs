@@ -4,18 +4,18 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-public static class RecipeTsvValidator
+public static class RecipeValidator
 {
     private const string ExpectedHeader =
         "ownerResourceId\tioType\tresourceId\tamount\tenabled";
 
     public static void Validate(
         string projectRelativePath,
-        out List<RecipeImportRow> rows,
+        out List<RecipeRow> rows,
         out List<string> errors
     )
     {
-        rows = new List<RecipeImportRow>();
+        rows = new List<RecipeRow>();
         errors = new List<string>();
 
         string fullPath = Path.GetFullPath(projectRelativePath);
@@ -65,7 +65,7 @@ public static class RecipeTsvValidator
             return;
         }
 
-        if (!GameDataTableIdProvider.TryLoadIds(
+        if (!TableIdProvider.TryLoadIds(
     typeof(ResourceDefinition),
     out HashSet<string> knownResourceIds,
     out List<string> resourceErrors
@@ -190,7 +190,7 @@ public static class RecipeTsvValidator
                 continue;
 
             rows.Add(
-                new RecipeImportRow(
+                new RecipeRow(
                     lineNumber,
                     ownerResourceId,
                     ioType,

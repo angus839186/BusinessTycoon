@@ -3,7 +3,7 @@ public enum RecipeIoType
     Input,
     Output
 }
-public class RecipeImportRow
+public class RecipeRow
 {
     public int LineNumber { get; }
     public string OwnerResourceId { get; }
@@ -12,7 +12,7 @@ public class RecipeImportRow
     public int Amount { get; }
     public bool Enabled { get; }
 
-    public RecipeImportRow(
+    public RecipeRow(
         int lineNumber,
         string ownerResourceId,
         RecipeIoType ioType,

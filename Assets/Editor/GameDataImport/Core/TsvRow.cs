@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class GameDataTsvRow
+public class TsvRow
 {
     public int LineNumber { get; }
 
@@ -9,7 +9,7 @@ public class GameDataTsvRow
 
     private readonly Dictionary<string, string> cells;
 
-    public GameDataTsvRow(
+    public TsvRow(
         int lineNumber,
         Dictionary<string, string> cells
     )
