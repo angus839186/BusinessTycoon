@@ -4,7 +4,7 @@ using System.Collections.Generic;
 [Serializable]
 public sealed class GameSaveData
 {
-    public int saveVersion = 1;
+    public int saveVersion = 2;
 
     public double totalGameMinutes;
     public float speedMultiplier = 1f;
@@ -12,6 +12,7 @@ public sealed class GameSaveData
     public int nextBuildingInstanceIndex = 1;
     public int nextRouteIndex = 1;
     public double lastTransportGameMinutes;
+
 
     public List<ResourceStackSaveData> globalResources =
         new List<ResourceStackSaveData>();

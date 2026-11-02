@@ -4,10 +4,10 @@ public sealed class FinanceSummaryPanel : MonoBehaviour
 {
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private Transform listRoot;
-    [SerializeField] private FinanceSummaryItemUI itemPrefab;
+    [SerializeField] private FinanceSummaryItem itemPrefab;
     [SerializeField] private GameObject emptyText;
 
-    private ReusableUIList<FinanceSummaryItemUI> itemList;
+    private ReusableUIList<FinanceSummaryItem> itemList;
 
     private void Awake()
     {
@@ -15,7 +15,7 @@ public sealed class FinanceSummaryPanel : MonoBehaviour
             productionSystem = FindFirstObjectByType<ProductionSystem>();
         if (itemPrefab != null && listRoot != null)
         {
-            itemList = new ReusableUIList<FinanceSummaryItemUI>(
+            itemList = new ReusableUIList<FinanceSummaryItem>(
                 itemPrefab,
                 listRoot
             );
@@ -46,7 +46,7 @@ public sealed class FinanceSummaryPanel : MonoBehaviour
         {
             for (int i = 0; i < recordCount; i++)
             {
-                FinanceSummaryItemUI item =
+                FinanceSummaryItem item =
                     itemList.GetOrCreate(i);
 
                 if (item == null)

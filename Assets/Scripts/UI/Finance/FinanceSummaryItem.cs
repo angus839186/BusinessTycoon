@@ -1,6 +1,6 @@
 using TMPro;
 using UnityEngine;
-public sealed class FinanceSummaryItemUI : MonoBehaviour
+public sealed class FinanceSummaryItem : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI monthText;
     [SerializeField] private TextMeshProUGUI incomeText;

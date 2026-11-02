@@ -6,7 +6,7 @@ using UnityEngine;
 
 public sealed partial class GameSaveSystem
 {
-    private const int CurrentSaveVersion = 1;
+    private const int CurrentSaveVersion = 2;
 
     [ContextMenu("Load Game")]
     public void LoadGame()
@@ -59,7 +59,7 @@ public sealed partial class GameSaveSystem
             return false;
         }
 
-        if (saveData.saveVersion != CurrentSaveVersion)
+        if (!TryMigrateSaveData(saveData))
         {
             Debug.LogError(
                 $"Unsupported save version: {saveData.saveVersion}"
@@ -96,6 +96,25 @@ public sealed partial class GameSaveSystem
         );
 
         return true;
+    }
+
+    private static bool TryMigrateSaveData(GameSaveData saveData)
+    {
+        if (saveData.saveVersion == 1)
+        {
+            if (saveData.buildings != null)
+            {
+                foreach (BuildingSaveData building in saveData.buildings)
+                {
+                    if (building != null)
+                        building.isOperational = true;
+                }
+            }
+
+            saveData.saveVersion = 2;
+        }
+
+        return saveData.saveVersion == CurrentSaveVersion;
     }
 
     private void RestoreGameState(GameSaveData saveData)
@@ -196,6 +215,7 @@ public sealed partial class GameSaveSystem
                     savedBuilding.longitude,
                     savedBuilding.latitude,
                     constructionCosts,
+                    savedBuilding.isOperational,
                     savedBuilding.lastMaintenanceGameMinutes,
                     savedBuilding.lastProcessGameMinutes
                 );

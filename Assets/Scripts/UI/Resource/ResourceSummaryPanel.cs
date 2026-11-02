@@ -8,7 +8,7 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
     [SerializeField] private GameDefinitionCatalog definitionCatalog;
 
     [SerializeField] private Transform listRoot;
-    [SerializeField] private ResourceSummaryItemUI itemPrefab;
+    [SerializeField] private ResourceSummaryItem itemPrefab;
     [SerializeField] private GameObject emptyText;
 
     private readonly Dictionary<ResourceDefinition, int> totals =
@@ -16,10 +16,10 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
 
     private readonly Dictionary<
         ResourceDefinition,
-        ResourceSummaryItemUI
+        ResourceSummaryItem
     > items = new Dictionary<
         ResourceDefinition,
-        ResourceSummaryItemUI
+        ResourceSummaryItem
     >();
 
     private void Awake()
@@ -71,7 +71,7 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
             if (definition == null)
                 continue;
 
-            ResourceSummaryItemUI item =
+            ResourceSummaryItem item =
                 Instantiate(itemPrefab, listRoot);
 
             item.gameObject.SetActive(true);
@@ -105,7 +105,7 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
         }
 
         foreach (
-            KeyValuePair<ResourceDefinition, ResourceSummaryItemUI>
+            KeyValuePair<ResourceDefinition, ResourceSummaryItem>
             pair in items
         )
         {

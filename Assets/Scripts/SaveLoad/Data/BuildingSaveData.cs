@@ -15,6 +15,8 @@ public sealed class BuildingSaveData
     public double lastMaintenanceGameMinutes;
     public double lastProcessGameMinutes;
 
+    public bool isOperational = true;
+
     public List<ResourceStackSaveData> inventory =
         new List<ResourceStackSaveData>();
 

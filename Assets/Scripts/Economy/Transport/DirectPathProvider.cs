@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class TemporaryTransportPathProvider : MonoBehaviour, ITransportPathProvider
+public sealed class DirectPathProvider : MonoBehaviour, ITransportPathProvider
 {
     public IReadOnlyList<Vector3> GetPath(
         BuildingInstance source,

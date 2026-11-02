@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public sealed class ManagementPanelButtonUI : MonoBehaviour
+public sealed class PanelButton : MonoBehaviour
 {
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI labelText;
@@ -12,8 +12,8 @@ public sealed class ManagementPanelButtonUI : MonoBehaviour
         if (panel == null)
             return;
 
-        ManagementPanelDisplay display =
-            panel.GetComponent<ManagementPanelDisplay>();
+        PanelInfo display =
+            panel.GetComponent<PanelInfo>();
 
         if (labelText != null)
         {

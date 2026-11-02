@@ -71,8 +71,8 @@ public sealed class ManagementPanelController : MonoBehaviour
             GameObject targetPanel = panel;
             Button button = Instantiate(buttonPrefab, buttonRoot);
 
-            ManagementPanelButtonUI buttonUI =
-    button.GetComponent<ManagementPanelButtonUI>();
+            PanelButton buttonUI =
+    button.GetComponent<PanelButton>();
 
             if (buttonUI != null)
             {

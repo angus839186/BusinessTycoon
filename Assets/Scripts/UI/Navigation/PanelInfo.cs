@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class ManagementPanelDisplay : MonoBehaviour
+public sealed class PanelInfo : MonoBehaviour
 {
     [SerializeField] private string displayName;
     [SerializeField] private Sprite icon;

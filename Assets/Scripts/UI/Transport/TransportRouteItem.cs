@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public sealed class TransportRouteListItemUI : MonoBehaviour
+public sealed class TransportRouteItem : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI routeText;
     [SerializeField] private Button toggleButton;

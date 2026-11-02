@@ -47,4 +47,40 @@ public sealed partial class ProductionSystem
         buildings.Remove(building);
         MarkBuildingsChanged();
     }
+
+    public bool SetBuildingOperational(
+    BuildingInstance building,
+    bool operational
+)
+    {
+        if (building == null ||
+            !buildings.Contains(building))
+        {
+            return false;
+        }
+
+        if (!building.SetOperational(operational))
+        {
+            return false;
+        }
+
+        if (operational &&
+            gameClock != null)
+        {
+            double currentGameMinutes =
+                gameClock.TotalGameMinutes;
+
+            building.SetLastProcessGameMinutes(
+                currentGameMinutes
+            );
+
+            building.SetLastMaintenanceGameMinutes(
+                currentGameMinutes
+            );
+        }
+
+        MarkBuildingsChanged();
+
+        return true;
+    }
 }

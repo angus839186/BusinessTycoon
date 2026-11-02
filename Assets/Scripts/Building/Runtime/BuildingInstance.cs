@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public sealed class BuildingInstance : MonoBehaviour
 {
@@ -9,6 +10,15 @@ public sealed class BuildingInstance : MonoBehaviour
     [SerializeField] private Vector3 worldPosition;
     [SerializeField] private double longitude;
     [SerializeField] private double latitude;
+
+    [SerializeField]
+    private bool isOperational = true;
+
+    public bool IsOperational =>
+        isOperational;
+
+    public event Action<bool>
+        OperationalStateChanged;
 
     public Vector3 WorldPosition => worldPosition;
     public double Longitude => longitude;
@@ -38,6 +48,24 @@ public sealed class BuildingInstance : MonoBehaviour
     {
         definition = buildingDefinition;
         instanceId = newInstanceId;
+    }
+
+    public bool SetOperational(
+    bool operational
+)
+    {
+        if (isOperational == operational)
+        {
+            return false;
+        }
+
+        isOperational = operational;
+
+        OperationalStateChanged?.Invoke(
+            isOperational
+        );
+
+        return true;
     }
     public void SetLocation(
     Vector3 newWorldPosition,

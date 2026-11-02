@@ -63,7 +63,8 @@ public sealed partial class GameSaveSystem
                 lastMaintenanceGameMinutes =
                     building.LastMaintenanceGameMinutes,
                 lastProcessGameMinutes =
-                    building.LastProcessGameMinutes
+                    building.LastProcessGameMinutes,
+                isOperational = building.IsOperational,
             };
 
             AddInventory(building.Inventory, buildingData.inventory);

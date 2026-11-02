@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public sealed class BuildingCatalogItemUI : MonoBehaviour
+public sealed class BuildingCatalogItem : MonoBehaviour
 {
     [SerializeField] private Button selectButton;
     [SerializeField] private Image iconImage;

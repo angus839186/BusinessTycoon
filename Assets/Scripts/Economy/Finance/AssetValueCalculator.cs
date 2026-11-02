@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public static class EconomyValueCalculator
+public static class AssetValueCalculator
 {
     public static long CalculateTotalAssetValue(
         ProductionSystem productionSystem

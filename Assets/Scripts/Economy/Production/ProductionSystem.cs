@@ -74,6 +74,11 @@ public sealed partial class ProductionSystem : MonoBehaviour
                 continue;
             }
 
+            if (!building.IsOperational)
+            {
+                continue;
+            }
+
             TickBuilding(building, Time.deltaTime);
         }
     }

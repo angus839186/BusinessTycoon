@@ -6,11 +6,11 @@ public sealed class TransportReportPanel : MonoBehaviour
     [SerializeField] private TransportSystem transport;
 
     [SerializeField] private Transform routeListRoot;
-    [SerializeField] private TransportRouteListItemUI routeItemPrefab;
+    [SerializeField] private TransportRouteItem routeItemPrefab;
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private GameObject emptyText;
 
-    private ReusableUIList<TransportRouteListItemUI> routeItemList;
+    private ReusableUIList<TransportRouteItem> routeItemList;
 
     private int lastRouteVersion = -1;
 
@@ -36,7 +36,7 @@ public sealed class TransportReportPanel : MonoBehaviour
         if (routeItemPrefab != null && routeListRoot != null)
         {
             routeItemList =
-                new ReusableUIList<TransportRouteListItemUI>(
+                new ReusableUIList<TransportRouteItem>(
                     routeItemPrefab,
                     routeListRoot
                 );
@@ -111,7 +111,7 @@ public sealed class TransportReportPanel : MonoBehaviour
         {
             if (route == null) continue;
 
-            TransportRouteListItemUI item =
+            TransportRouteItem item =
                 routeItemList.GetOrCreate(itemIndex);
 
             if (item == null) continue;

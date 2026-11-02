@@ -65,7 +65,7 @@ public sealed class EconomyHud : MonoBehaviour
         if (totalAssetText != null)
         {
             totalAssetText.text =
-                EconomyValueCalculator
+                AssetValueCalculator
                     .CalculateTotalAssetValue(productionSystem)
                     .ToString("N0");
         }

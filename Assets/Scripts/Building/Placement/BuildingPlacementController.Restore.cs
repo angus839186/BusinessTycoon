@@ -15,6 +15,7 @@ public sealed partial class BuildingPlacementController
         double longitude,
         double latitude,
         ResourceAmount[] constructionCosts,
+        bool isOperational,
         double lastMaintenanceGameMinutes,
         double lastProcessGameMinutes
     )
@@ -43,6 +44,8 @@ public sealed partial class BuildingPlacementController
         instance.SetLastProcessGameMinutes(
             lastProcessGameMinutes
         );
+
+        instance.SetOperational(isOperational);
 
         return instance;
     }

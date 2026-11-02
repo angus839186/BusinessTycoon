@@ -48,8 +48,8 @@ public sealed partial class TransportSystem
         BuildingInstance source = FindBuildingById(route.sourceBuildingId);
         BuildingInstance target = FindBuildingById(route.targetBuildingId);
 
-        if (source == null || target == null)
-            return false;
+        if (source == null || target == null) return false;
+        if (!source.IsOperational || !target.IsOperational) return false;
 
         if (!NeedsResource(target.Definition, route.resource))
             return false;
@@ -97,10 +97,18 @@ public sealed partial class TransportSystem
         ResourceDefinition resource
     )
     {
+        if (source == null || !source.IsOperational) return false;
         foreach (BuildingInstance target in productionSystem.Buildings)
         {
-            if (target == null || target == source || target.Definition == null)
+            if (
+                target == null ||
+                target == source ||
+                target.Definition == null ||
+                !target.IsOperational
+            )
+            {
                 continue;
+            }
 
             if (!NeedsResource(target.Definition, resource))
                 continue;

@@ -5,10 +5,10 @@ public sealed class BuildingListPanel : MonoBehaviour
     [SerializeField] private ProductionSystem productionSystem;
 
     [SerializeField] private Transform listRoot;
-    [SerializeField] private BuildingListItemUI itemPrefab;
+    [SerializeField] private BuildingListItem itemPrefab;
     [SerializeField] private GameObject emptyText;
 
-    private ReusableUIList<BuildingListItemUI> itemList;
+    private ReusableUIList<BuildingListItem> itemList;
 
     private void Awake()
     {
@@ -17,7 +17,7 @@ public sealed class BuildingListPanel : MonoBehaviour
 
         if (itemPrefab != null && listRoot != null)
         {
-            itemList = new ReusableUIList<BuildingListItemUI>(
+            itemList = new ReusableUIList<BuildingListItem>(
                 itemPrefab,
                 listRoot
             );
@@ -50,7 +50,7 @@ public sealed class BuildingListPanel : MonoBehaviour
             if (building == null || building.Definition == null)
                 continue;
 
-            BuildingListItemUI item =
+            BuildingListItem item =
                 itemList.GetOrCreate(itemIndex);
 
             if (item == null)

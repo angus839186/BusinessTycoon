@@ -11,23 +11,23 @@ public class BuildingCatalogPanel : MonoBehaviour
 
     [Header("List")]
     [SerializeField] private Transform listRoot;
-    [SerializeField] private BuildingCatalogItemUI itemPrefab;
+    [SerializeField] private BuildingCatalogItem itemPrefab;
     [SerializeField] private GameObject emptyText;
 
     [Header("Actions")]
     [SerializeField] private Button startPlacementButton;
     [SerializeField] private ManagementPanelController managementPanelController;
 
-    private ReusableUIList<BuildingCatalogItemUI> itemList;
+    private ReusableUIList<BuildingCatalogItem> itemList;
 
     private readonly List<BuildingDefinition> definitions =
         new List<BuildingDefinition>();
 
     private readonly Dictionary<
         BuildingDefinition,
-        BuildingCatalogItemUI
+        BuildingCatalogItem
     > itemsByDefinition =
-        new Dictionary<BuildingDefinition, BuildingCatalogItemUI>();
+        new Dictionary<BuildingDefinition, BuildingCatalogItem>();
 
     private void Awake()
     {
@@ -57,7 +57,7 @@ public class BuildingCatalogPanel : MonoBehaviour
         }
 
         itemList =
-            new ReusableUIList<BuildingCatalogItemUI>(
+            new ReusableUIList<BuildingCatalogItem>(
                 itemPrefab,
                 listRoot
             );
@@ -129,7 +129,7 @@ public class BuildingCatalogPanel : MonoBehaviour
 
         foreach (BuildingDefinition definition in definitions)
         {
-            BuildingCatalogItemUI item =
+            BuildingCatalogItem item =
                 itemList.GetOrCreate(visibleItemCount);
 
             if (item == null)
@@ -175,7 +175,7 @@ public class BuildingCatalogPanel : MonoBehaviour
         foreach (
             KeyValuePair<
                 BuildingDefinition,
-                BuildingCatalogItemUI
+                BuildingCatalogItem
             > pair in itemsByDefinition
         )
         {

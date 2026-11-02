@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 
 [RequireComponent(typeof(RectTransform))]
-public sealed class TmpDropdownAutoSize : MonoBehaviour
+public sealed class DropdownAutoSize : MonoBehaviour
 {
     [SerializeField] private TMP_Dropdown dropdown;
     [SerializeField] private TextMeshProUGUI label;

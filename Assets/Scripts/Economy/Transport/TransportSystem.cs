@@ -54,7 +54,7 @@ public sealed partial class TransportSystem : MonoBehaviour
         pathProvider = pathProviderBehaviour as ITransportPathProvider;
 
         if (pathProvider == null)
-            pathProvider = FindFirstObjectByType<TemporaryTransportPathProvider>();
+            pathProvider = FindFirstObjectByType<DirectPathProvider>();
 
         if (gameClock != null)
             lastTransferGameMinutes = gameClock.TotalGameMinutes;
