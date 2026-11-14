@@ -2,21 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class BuildingCatalogPanel : MonoBehaviour
 {
-    [Header("Data")]
+    [SerializeField] private MapModeController mapMode;
+
     [SerializeField] private GameDefinitionCatalog definitionCatalog;
     [SerializeField] private BuildingPlacementController buildingPlacement;
 
-    [Header("List")]
     [SerializeField] private Transform listRoot;
     [SerializeField] private BuildingCatalogItem itemPrefab;
-    [SerializeField] private GameObject emptyText;
 
-    [Header("Actions")]
-    [SerializeField] private Button startPlacementButton;
-    [SerializeField] private ManagementPanelController managementPanelController;
+    [SerializeField] private TMP_InputField searchInput;
+    [SerializeField] private TMP_Dropdown categoryDropdown;
+    [SerializeField] private GameObject emptyText;
+    [SerializeField] private PanelController PanelController;
 
     private ReusableUIList<BuildingCatalogItem> itemList;
 
@@ -24,49 +25,42 @@ public class BuildingCatalogPanel : MonoBehaviour
         new List<BuildingDefinition>();
 
     private readonly Dictionary<
-        BuildingDefinition,
-        BuildingCatalogItem
-    > itemsByDefinition =
+        BuildingDefinition, BuildingCatalogItem> itemsByDefinition =
         new Dictionary<BuildingDefinition, BuildingCatalogItem>();
 
     private void Awake()
     {
+        if (mapMode == null)
+            mapMode = FindFirstObjectByType<MapModeController>();
+
         if (definitionCatalog == null)
-        {
-            definitionCatalog =
-                FindFirstObjectByType<GameDefinitionCatalog>();
-        }
+            definitionCatalog = FindFirstObjectByType<GameDefinitionCatalog>();
 
         if (buildingPlacement == null)
-        {
             buildingPlacement =
-                FindFirstObjectByType<BuildingPlacementController>();
-        }
+            FindFirstObjectByType<BuildingPlacementController>();
 
-        if (managementPanelController == null)
-        {
-            managementPanelController =
-                FindFirstObjectByType<ManagementPanelController>();
-        }
+        if (PanelController == null)
+            PanelController = FindFirstObjectByType<PanelController>();
 
-        if (startPlacementButton != null)
+        if (searchInput != null)
         {
-            startPlacementButton.onClick.AddListener(
-                HandleStartPlacementClicked
+            searchInput.onValueChanged.AddListener(
+                HandleSearchChanged
             );
         }
 
-        itemList =
-            new ReusableUIList<BuildingCatalogItem>(
-                itemPrefab,
-                listRoot
-            );
-
-        if (definitionCatalog != null &&
-            definitionCatalog.BuildingCount == 0)
+        if (categoryDropdown != null)
         {
+            categoryDropdown.onValueChanged.AddListener(
+                HandleCategoryChanged
+            );
+        }
+
+        itemList = new ReusableUIList<BuildingCatalogItem>(itemPrefab, listRoot);
+
+        if (definitionCatalog != null && definitionCatalog.BuildingCount == 0)
             definitionCatalog.Reload();
-        }
     }
 
     private void OnEnable()
@@ -78,6 +72,8 @@ public class BuildingCatalogPanel : MonoBehaviour
         }
 
         BuildList();
+
+
     }
 
     private void OnDisable()
@@ -91,10 +87,17 @@ public class BuildingCatalogPanel : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (startPlacementButton != null)
+        if (searchInput != null)
         {
-            startPlacementButton.onClick.RemoveListener(
-                HandleStartPlacementClicked
+            searchInput.onValueChanged.RemoveListener(
+                HandleSearchChanged
+            );
+        }
+
+        if (categoryDropdown != null)
+        {
+            categoryDropdown.onValueChanged.RemoveListener(
+                HandleCategoryChanged
             );
         }
     }
@@ -105,7 +108,6 @@ public class BuildingCatalogPanel : MonoBehaviour
     {
         definitions.Clear();
         itemsByDefinition.Clear();
-
         if (definitionCatalog == null || itemList == null)
         {
             SetEmptyState(true);
@@ -129,18 +131,18 @@ public class BuildingCatalogPanel : MonoBehaviour
 
         foreach (BuildingDefinition definition in definitions)
         {
-            BuildingCatalogItem item =
-                itemList.GetOrCreate(visibleItemCount);
+            if (!MatchesFilter(definition))
+            {
+                continue;
+            }
+            BuildingCatalogItem item = itemList.GetOrCreate(visibleItemCount);
 
             if (item == null)
             {
                 continue;
             }
 
-            item.Initialize(
-                definition,
-                HandleBuildingSelected
-            );
+            item.Initialize(definition, HandleBuildingSelected);
 
             itemsByDefinition[definition] = item;
             visibleItemCount++;
@@ -156,21 +158,91 @@ public class BuildingCatalogPanel : MonoBehaviour
         );
     }
 
-    private void HandleBuildingSelected(
-        BuildingDefinition definition
-    )
+    private bool MatchesFilter(
+    BuildingDefinition definition
+)
     {
-        if (buildingPlacement == null)
+        if (definition == null)
         {
-            return;
+            return false;
         }
 
+        int categoryIndex =
+            categoryDropdown != null
+                ? categoryDropdown.value
+                : 0;
+
+        bool matchesCategory = categoryIndex switch
+        {
+            0 => true,
+            1 => definition.category ==
+                 BuildingCategory.Resource,
+            2 => definition.category ==
+                 BuildingCategory.Processing,
+            3 => definition.category ==
+                 BuildingCategory.Commercial,
+            4 => definition.category ==
+                 BuildingCategory.Storage,
+            _ => true
+        };
+
+        if (!matchesCategory)
+        {
+            return false;
+        }
+
+        string query =
+            searchInput != null
+                ? searchInput.text.Trim()
+                : string.Empty;
+
+        if (string.IsNullOrEmpty(query))
+        {
+            return true;
+        }
+
+        bool matchesName =
+            !string.IsNullOrEmpty(definition.displayName) &&
+            definition.displayName.IndexOf(
+                query,
+                StringComparison.OrdinalIgnoreCase
+            ) >= 0;
+
+        bool matchesId =
+            !string.IsNullOrEmpty(definition.buildingId) &&
+            definition.buildingId.IndexOf(
+                query,
+                StringComparison.OrdinalIgnoreCase
+            ) >= 0;
+
+        return matchesName || matchesId;
+    }
+
+    private void HandleSearchChanged(string value)
+    {
+        BuildList();
+    }
+
+    private void HandleCategoryChanged(int value)
+    {
+        BuildList();
+    }
+
+    private void HandleBuildingSelected(BuildingDefinition definition)
+    {
+        if (buildingPlacement == null ||
+            definition == null || !definition.isEnabled)
+            return;
+
         buildingPlacement.SelectBuilding(definition);
+
+        if (PanelController != null) PanelController.CloseCurrentPanel();
+
+        if (mapMode != null) mapMode.StartPlacementMode();
     }
 
     private void HandleSelectedBuildingChanged(
-    BuildingDefinition selectedDefinition
-)
+BuildingDefinition selectedDefinition)
     {
         foreach (
             KeyValuePair<
@@ -179,41 +251,8 @@ public class BuildingCatalogPanel : MonoBehaviour
             > pair in itemsByDefinition
         )
         {
-            pair.Value.SetSelected(
-                pair.Key == selectedDefinition
-            );
+            pair.Value.SetSelected(pair.Key == selectedDefinition);
         }
-
-        if (startPlacementButton != null)
-        {
-            startPlacementButton.interactable =
-                selectedDefinition != null &&
-                selectedDefinition.isEnabled;
-        }
-    }
-
-    private void HandleStartPlacementClicked()
-    {
-        if (buildingPlacement == null)
-        {
-            return;
-        }
-
-        BuildingDefinition selectedDefinition =
-            buildingPlacement.SelectedBuilding;
-
-        if (selectedDefinition == null ||
-            !selectedDefinition.isEnabled)
-        {
-            return;
-        }
-
-        if (managementPanelController != null)
-        {
-            managementPanelController.CloseCurrentPanel();
-        }
-
-        buildingPlacement.EnterPlacementMode();
     }
 
     private void SetEmptyState(bool isEmpty)
@@ -224,10 +263,7 @@ public class BuildingCatalogPanel : MonoBehaviour
         }
     }
 
-    private static int CompareDefinitions(
-        BuildingDefinition left,
-        BuildingDefinition right
-    )
+    private static int CompareDefinitions(BuildingDefinition left, BuildingDefinition right)
     {
         int categoryComparison =
             left.category.CompareTo(right.category);

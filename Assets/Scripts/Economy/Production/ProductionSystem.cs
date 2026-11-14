@@ -4,6 +4,7 @@ using System;
 
 public sealed partial class ProductionSystem : MonoBehaviour
 {
+    [SerializeField] private MarketSystem marketSystem;
     [SerializeField] private GameRules gameRules;
     [SerializeField] private ResourceAmount[] startingResources;
     [SerializeField] private bool logProduction = true;
@@ -32,6 +33,11 @@ public sealed partial class ProductionSystem : MonoBehaviour
 
     private void Start()
     {
+        if (marketSystem == null)
+        {
+            marketSystem =
+                FindFirstObjectByType<MarketSystem>();
+        }
         if (gameRules == null)
             gameRules = FindFirstObjectByType<GameRules>();
         if (gameClock == null)

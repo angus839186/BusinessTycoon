@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public sealed class ResourceSummaryItem : MonoBehaviour
 {
+    private MarketSystem marketSystem;
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI amountText;
@@ -12,9 +13,10 @@ public sealed class ResourceSummaryItem : MonoBehaviour
 
     private ResourceDefinition definition;
 
-    public void Initialize(ResourceDefinition resource)
+    public void Initialize(ResourceDefinition resource, MarketSystem market)
     {
         definition = resource;
+        marketSystem = market;
 
         if (definition == null)
             return;
@@ -34,7 +36,10 @@ public sealed class ResourceSummaryItem : MonoBehaviour
         }
 
         if (basePriceText != null)
-            basePriceText.text = definition.basePrice.ToString();
+        {
+            basePriceText.text =
+                GetUnitPrice().ToString();
+        }
 
         SetAmount(0);
     }
@@ -46,12 +51,31 @@ public sealed class ResourceSummaryItem : MonoBehaviour
         if (amountText != null)
             amountText.text = amount.ToString();
 
+        int unitPrice = GetUnitPrice();
+
+        if (basePriceText != null)
+        {
+            basePriceText.text =
+                unitPrice.ToString();
+        }
+
         if (totalValueText != null)
         {
             long totalValue =
-                (long)Mathf.Max(0, definition.basePrice) * amount;
+                (long)unitPrice * amount;
 
-            totalValueText.text = totalValue.ToString();
+            totalValueText.text =
+                totalValue.ToString();
         }
+    }
+
+    private int GetUnitPrice()
+    {
+        if (definition == null)
+            return 0;
+
+        return marketSystem != null
+            ? marketSystem.GetUnitPrice(definition)
+            : Mathf.Max(0, definition.basePrice);
     }
 }

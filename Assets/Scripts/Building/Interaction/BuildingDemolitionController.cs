@@ -1,11 +1,13 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using TMPro;
 
 public sealed class BuildingDemolitionController : MonoBehaviour
 {
+    [SerializeField] private GameInput gameInput;
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private TransportSystem transport;
+
+    [SerializeField] private BuildingSelector buildingSelector;
     [SerializeField] private GameRules gameRules;
 
     [SerializeField] private BuildingPlacementController buildingPlacement;
@@ -17,6 +19,8 @@ public sealed class BuildingDemolitionController : MonoBehaviour
 
     private void Awake()
     {
+        if (gameInput == null)
+            gameInput = FindFirstObjectByType<GameInput>();
         if (buildingPlacement == null)
             buildingPlacement = FindFirstObjectByType<BuildingPlacementController>();
         if (productionSystem == null)
@@ -27,24 +31,40 @@ public sealed class BuildingDemolitionController : MonoBehaviour
 
         if (gameRules == null)
             gameRules = FindFirstObjectByType<GameRules>();
+        if (buildingSelector == null)
+        {
+            buildingSelector = FindFirstObjectByType<BuildingSelector>();
+        }
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        if (!isDemolitionMode || Mouse.current == null)
-            return;
+        if (gameInput != null)
+        {
+            gameInput.PrimaryPressed +=
+                HandlePrimaryPressed;
+        }
+    }
 
+    private void OnDisable()
+    {
+        if (gameInput != null)
+        {
+            gameInput.PrimaryPressed -=
+                HandlePrimaryPressed;
+        }
+    }
+
+    private void HandlePrimaryPressed()
+    {
         if (
-            Mouse.current.rightButton.wasPressedThisFrame ||
-            Keyboard.current.escapeKey.wasPressedThisFrame
+            !isDemolitionMode ||
+            gameInput == null ||
+            gameInput.IsPointerOverUI()
         )
         {
-            ExitDemolitionMode();
             return;
         }
-
-        if (!Mouse.current.leftButton.wasPressedThisFrame)
-            return;
 
         TryDemolishClickedBuilding();
     }
@@ -78,45 +98,67 @@ public sealed class BuildingDemolitionController : MonoBehaviour
         else
             EnterDemolitionMode();
     }
+    public bool TryDemolish(BuildingInstance building)
+    {
+        if (building == null) return false;
+
+        float demolitionCostRate = gameRules != null ? gameRules.DemolitionCostRate
+                : 0.2f;
+
+        if (productionSystem != null &&
+            !productionSystem.TryPayDemolitionCost(building, demolitionCostRate)
+        )
+        {
+            Debug.Log(
+                $"Cannot demolish: not enough resources " +
+                $"for {building.InstanceId}"
+            );
+
+            return false;
+        }
+
+        if (transport != null)
+        {
+            transport.RemoveRoutesForBuilding(building.InstanceId);
+        }
+
+        if (productionSystem != null)
+        {
+            productionSystem.Unregister(building);
+        }
+
+        if (buildingSelector != null && buildingSelector.SelectedBuilding == building
+        )
+        {
+            buildingSelector.ClearSelection();
+        }
+
+        Destroy(building.gameObject);
+
+        Debug.Log(
+            $"Building demolished: {building.InstanceId}"
+        );
+
+        SetStatus("建築已拆除");
+        return true;
+    }
 
     private void TryDemolishClickedBuilding()
     {
         Camera camera = Camera.main;
 
-        if (camera == null)
+        if (camera == null || gameInput == null)
             return;
 
-        Ray ray = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Ray ray = camera.ScreenPointToRay(gameInput.PointerPosition);
 
         if (!Physics.Raycast(ray, out RaycastHit hit))
             return;
 
-        BuildingInstance building = hit.collider.GetComponent<BuildingInstance>();
+        BuildingInstance building =
+            hit.collider
+                .GetComponentInParent<BuildingInstance>();
 
-        if (building == null)
-            return;
-
-        float demolitionCostRate =
-            gameRules != null ? gameRules.DemolitionCostRate : 0.2f;
-
-        if (
-            productionSystem != null &&
-            !productionSystem.TryPayDemolitionCost(building, demolitionCostRate)
-        )
-        {
-            Debug.Log($"Cannot demolish: not enough resources for {building.InstanceId}");
-            return;
-        }
-
-        if (transport != null)
-            transport.RemoveRoutesForBuilding(building.InstanceId);
-
-        if (productionSystem != null)
-            productionSystem.Unregister(building);
-
-        Destroy(building.gameObject);
-
-        Debug.Log($"Building demolished: {building.InstanceId}");
-        SetStatus("建築已拆除");
+        TryDemolish(building);
     }
 }

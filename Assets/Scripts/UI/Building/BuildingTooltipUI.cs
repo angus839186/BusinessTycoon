@@ -1,10 +1,11 @@
 using System.Text;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 public sealed class BuildingTooltipUI : MonoBehaviour
 {
+    [SerializeField] private GameInput gameInput;
     [SerializeField] private RectTransform tooltipRoot;
     [SerializeField] private TextMeshProUGUI tooltipText;
     [SerializeField] private Vector2 screenOffset = new Vector2(16f, -16f);
@@ -17,19 +18,27 @@ public sealed class BuildingTooltipUI : MonoBehaviour
 
     private void Awake()
     {
+        if (gameInput == null)
+            gameInput = FindFirstObjectByType<GameInput>();
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
     }
 
     private void Update()
     {
-        if (Mouse.current == null || Camera.main == null)
+        if (gameInput == null || !gameInput.IsMapEnabled || Camera.main == null)
         {
             Hide();
             return;
         }
 
-        Vector2 screenPosition = Mouse.current.position.ReadValue();
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            Hide();
+            return;
+        }
+
+        Vector2 screenPosition = gameInput.PointerPosition;
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
 
         if (!Physics.Raycast(ray, out RaycastHit hit))
@@ -38,7 +47,7 @@ public sealed class BuildingTooltipUI : MonoBehaviour
             return;
         }
 
-        BuildingInstance building = hit.collider.GetComponent<BuildingInstance>();
+        BuildingInstance building = hit.collider.GetComponentInParent<BuildingInstance>();
 
         if (building == null)
         {

@@ -1,51 +1,71 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public sealed class MapPointer : MonoBehaviour
 {
+    [SerializeField]
+    private GameInput gameInput;
+
     [SerializeField] private GeoJsonMapProjection geoJsonProjection;
     [SerializeField] private BuildingPlacementController buildingPlacement;
     [SerializeField] private BuildingPlacementPreview placementPreview;
 
     [SerializeField] private BuildableAreaQuery buildableAreaQuery;
-    [SerializeField] private BuildingDemolitionController demolitionController;
+    private bool primaryPressed;
+
+    private void Awake()
+    {
+        if (gameInput == null)
+        {
+            gameInput =
+                FindFirstObjectByType<GameInput>();
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (gameInput != null)
+        {
+            gameInput.PrimaryPressed +=
+                HandlePrimaryPressed;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (gameInput != null)
+        {
+            gameInput.PrimaryPressed -=
+                HandlePrimaryPressed;
+        }
+
+        primaryPressed = false;
+    }
+
+    private void HandlePrimaryPressed()
+    {
+        primaryPressed = true;
+    }
 
     private void Update()
     {
-        if (geoJsonProjection == null || Mouse.current == null)
-            return;
+
+        bool clicked = primaryPressed;
+        primaryPressed = false;
+
+        if (geoJsonProjection == null || gameInput == null) return;
 
         Camera camera = Camera.main;
-        if (demolitionController != null && demolitionController.IsDemolitionMode)
-        {
-            if (placementPreview != null)
-                placementPreview.Hide();
 
+        if (camera == null) return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            if (placementPreview != null) placementPreview.Hide();
             return;
         }
 
-        if (camera == null)
-            return;
-
-        bool clicked = Mouse.current.leftButton.wasPressedThisFrame;
-
-        if (
-    buildingPlacement != null &&
-    buildingPlacement.IsPlacementMode &&
-    (
-        Mouse.current.rightButton.wasPressedThisFrame ||
-        Keyboard.current.escapeKey.wasPressedThisFrame
-    )
-)
-        {
-            buildingPlacement.ExitPlacementMode();
-
-            if (placementPreview != null)
-                placementPreview.Hide();
-
-            return;
-        }
-        Vector2 screenPosition = Mouse.current.position.ReadValue();
+        Vector2 screenPosition = gameInput.PointerPosition;
         Vector3 worldPosition = camera.ScreenToWorldPoint(screenPosition);
         worldPosition.z = 0f;
 
@@ -55,20 +75,16 @@ public sealed class MapPointer : MonoBehaviour
             out double latitude
         ))
         {
-            if (placementPreview != null)
-                placementPreview.Hide();
-
+            if (placementPreview != null) placementPreview.Hide();
             return;
         }
 
         bool isInsideBuildableArea =
-    buildableAreaQuery != null &&
-    buildableAreaQuery.Contains(longitude, latitude);
+    buildableAreaQuery != null && buildableAreaQuery.Contains(longitude, latitude);
 
         if (buildingPlacement == null || !buildingPlacement.IsPlacementMode)
         {
-            if (placementPreview != null)
-                placementPreview.Hide();
+            if (placementPreview != null) placementPreview.Hide();
 
             return;
         }
@@ -78,24 +94,17 @@ public sealed class MapPointer : MonoBehaviour
             buildingPlacement != null &&
             buildingPlacement.CanPlaceSelectedBuilding();
 
-        if (placementPreview != null)
-            placementPreview.Show(worldPosition, canBuild);
+        if (placementPreview != null) placementPreview.Show(worldPosition, canBuild);
 
-        if (!clicked)
-            return;
+        if (!clicked) return;
 
-        if (!canBuild)
-            return;
+        if (!canBuild) return;
 
         Debug.Log($"Map Click: Lon={longitude:F6}, Lat={latitude:F6}");
 
         if (buildingPlacement != null)
         {
-            buildingPlacement.PlaceBuilding(
-                worldPosition,
-                longitude,
-                latitude
-            );
+            buildingPlacement.PlaceBuilding(worldPosition, longitude, latitude);
         }
     }
 }

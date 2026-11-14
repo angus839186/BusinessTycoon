@@ -4,6 +4,7 @@ using UnityEngine;
 
 public sealed class ResourceSummaryPanel : MonoBehaviour
 {
+    [SerializeField] private MarketSystem marketSystem;
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private GameDefinitionCatalog definitionCatalog;
 
@@ -24,6 +25,11 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
 
     private void Awake()
     {
+        if (marketSystem == null)
+        {
+            marketSystem =
+                FindFirstObjectByType<MarketSystem>();
+        }
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
 
@@ -34,6 +40,10 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        if (marketSystem != null)
+        {
+            marketSystem.PricesChanged += RefreshAmounts;
+        }
         if (productionSystem != null)
             productionSystem.DataChanged += RefreshAmounts;
 
@@ -43,6 +53,10 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
 
     private void OnDisable()
     {
+        if (marketSystem != null)
+        {
+            marketSystem.PricesChanged -= RefreshAmounts;
+        }
         if (productionSystem != null)
             productionSystem.DataChanged -= RefreshAmounts;
     }
@@ -75,7 +89,7 @@ public sealed class ResourceSummaryPanel : MonoBehaviour
                 Instantiate(itemPrefab, listRoot);
 
             item.gameObject.SetActive(true);
-            item.Initialize(definition);
+            item.Initialize(definition, marketSystem);
             items.Add(definition, item);
         }
 

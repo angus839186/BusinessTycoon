@@ -3,15 +3,15 @@ using System.Collections.Generic;
 public static class AssetValueCalculator
 {
     public static long CalculateTotalAssetValue(
-        ProductionSystem productionSystem
-    )
+    ProductionSystem productionSystem, MarketSystem marketSystem)
     {
         if (productionSystem == null)
             return 0;
 
         long total = CalculateInventoryValue(
-            productionSystem.GlobalInventory
-        );
+                    productionSystem.GlobalInventory,
+                    marketSystem
+                );
 
         foreach (BuildingInstance building in productionSystem.Buildings)
         {
@@ -19,18 +19,23 @@ public static class AssetValueCalculator
                 continue;
 
             total += CalculateAmountsValue(
-                building.ConstructionCostSnapshot
+                building.ConstructionCostSnapshot,
+                marketSystem
             );
 
-            total += CalculateInventoryValue(building.Inventory);
+            total += CalculateInventoryValue(
+                building.Inventory,
+                marketSystem
+            );
         }
 
         return total;
     }
 
     private static long CalculateInventoryValue(
-        BuildingInventory inventory
-    )
+    BuildingInventory inventory,
+    MarketSystem marketSystem
+)
     {
         if (inventory == null)
             return 0;
@@ -42,15 +47,19 @@ public static class AssetValueCalculator
             if (stack == null)
                 continue;
 
-            total += CalculateValue(stack.resource, stack.amount);
+            total += CalculateValue(
+                stack.resource,
+                stack.amount,
+                marketSystem);
         }
 
         return total;
     }
 
     private static long CalculateAmountsValue(
-        IReadOnlyList<ResourceAmount> amounts
-    )
+    IReadOnlyList<ResourceAmount> amounts,
+    MarketSystem marketSystem
+)
     {
         if (amounts == null)
             return 0;
@@ -62,20 +71,30 @@ public static class AssetValueCalculator
             if (amount == null)
                 continue;
 
-            total += CalculateValue(amount.resource, amount.amount);
+            total += CalculateValue(
+                amount.resource,
+                amount.amount,
+                marketSystem
+            );
         }
 
         return total;
     }
 
     private static long CalculateValue(
-        ResourceDefinition resource,
-        int amount
-    )
+    ResourceDefinition resource,
+    int amount,
+    MarketSystem marketSystem
+)
     {
         if (resource == null || amount <= 0)
             return 0;
 
-        return (long)System.Math.Max(0, resource.basePrice) * amount;
+        int unitPrice =
+    marketSystem != null
+        ? marketSystem.GetUnitPrice(resource)
+        : System.Math.Max(0, resource.basePrice);
+
+        return (long)unitPrice * amount;
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public sealed class GameSystemPanel : MonoBehaviour
 {
     [SerializeField] private GameSaveSystem gameSaveSystem;
-    [SerializeField] private ManagementPanelController panelController;
+    [SerializeField] private PanelController panelController;
 
     private void Awake()
     {
@@ -13,7 +13,7 @@ public sealed class GameSystemPanel : MonoBehaviour
 
         if (panelController == null)
             panelController =
-                FindFirstObjectByType<ManagementPanelController>();
+                FindFirstObjectByType<PanelController>();
     }
 
     public void ContinueGame()

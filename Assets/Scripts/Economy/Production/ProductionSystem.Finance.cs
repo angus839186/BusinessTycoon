@@ -237,8 +237,12 @@ public sealed partial class ProductionSystem
             return 0;
         }
 
+        int unitPrice = marketSystem != null
+        ? marketSystem.GetUnitPrice(resource)
+        : Mathf.Max(0, resource.basePrice);
+
         int baseIncome =
-            resource.basePrice * amount;
+            unitPrice * amount;
 
         float multiplier =
             gameRules != null
@@ -295,9 +299,21 @@ public sealed partial class ProductionSystem
                 continue;
 
             if (resourceAmount.resource == moneyResource)
+            {
                 total += resourceAmount.amount;
+            }
             else
-                total += resourceAmount.resource.basePrice * resourceAmount.amount;
+            {
+                int unitPrice =
+                    marketSystem != null
+                        ? marketSystem.GetUnitPrice(resourceAmount.resource)
+                        : Mathf.Max(
+                            0,
+                            resourceAmount.resource.basePrice
+                        );
+
+                total += unitPrice * resourceAmount.amount;
+            }
         }
 
         return total;

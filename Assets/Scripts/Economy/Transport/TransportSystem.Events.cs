@@ -2,8 +2,11 @@ using UnityEngine;
 
 public sealed partial class TransportSystem
 {
+
     private void MarkRoutesChanged()
     {
+        RefreshRouteVisuals();
+
         RouteVersion++;
         RoutesChanged?.Invoke();
     }

@@ -1,10 +1,12 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using TMPro;
 
 public sealed class TransportRouteBuilder : MonoBehaviour
 {
+    [SerializeField] private GameInput gameInput;
+    [SerializeField] private BuildingPlacementController buildingPlacement;
+
+    [SerializeField] private BuildingDemolitionController demolitionController;
     [SerializeField] private TransportSystem transport;
     [SerializeField] private TextMeshProUGUI statusText;
 
@@ -14,50 +16,61 @@ public sealed class TransportRouteBuilder : MonoBehaviour
 
     private void Awake()
     {
-        if (transport == null)
-            transport = FindFirstObjectByType<TransportSystem>();
-    }
-
-    private void Update()
-    {
-        if (!isCreatingRoute || Mouse.current == null)
-            return;
-
-        if (
-    Mouse.current.rightButton.wasPressedThisFrame ||
-    (
-        Keyboard.current != null &&
-        Keyboard.current.escapeKey.wasPressedThisFrame
-    )
-)
+        if (gameInput == null) gameInput = FindFirstObjectByType<GameInput>();
+        if (buildingPlacement == null)
         {
-            CancelCreateRoute();
-            return;
+            buildingPlacement =
+            FindFirstObjectByType<BuildingPlacementController>();
         }
 
-        // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        //     return;
+        if (demolitionController == null)
+        {
+            demolitionController = FindFirstObjectByType<BuildingDemolitionController>();
+        }
+        if (transport == null) transport = FindFirstObjectByType<TransportSystem>();
+    }
+
+    private void OnEnable()
+    {
+        if (gameInput != null)
+            gameInput.PrimaryPressed += HandlePrimaryPressed;
+    }
+
+    private void OnDisable()
+    {
+        if (gameInput != null)
+            gameInput.PrimaryPressed -= HandlePrimaryPressed;
+    }
+
+    private void HandlePrimaryPressed()
+    {
+        if (!isCreatingRoute || gameInput == null || gameInput.IsPointerOverUI())
+            return;
 
         BuildingInstance clickedBuilding = RaycastBuilding();
 
-        if (clickedBuilding == null)
-            return;
+        if (clickedBuilding == null) return;
 
         if (selectedSource == null)
         {
             selectedSource = clickedBuilding;
-            SetStatus($"來源：{selectedSource.Definition.displayName}，請選擇目標建築");
-            Debug.Log($"Route Source Selected: {selectedSource.InstanceId}");
+
+            SetStatus($"來源：{selectedSource.Definition.displayName}，" + "請選擇目標建築");
+
+            Debug.Log(
+                $"Route Source Selected: " +
+                $"{selectedSource.InstanceId}"
+            );
+
             return;
         }
 
-        if (clickedBuilding == selectedSource)
-            return;
+        if (clickedBuilding == selectedSource) return;
 
         transport.AddDefinedRoute(
-    selectedSource,
-    clickedBuilding
-);
+            selectedSource,
+            clickedBuilding
+        );
 
         SetStatus("路線已建立");
         StopCreateRoute();
@@ -69,6 +82,17 @@ public sealed class TransportRouteBuilder : MonoBehaviour
         {
             Debug.LogError("TransportSystem missing.");
             return;
+        }
+
+        if (buildingPlacement != null && buildingPlacement.IsPlacementMode)
+        {
+            buildingPlacement.ExitPlacementMode();
+        }
+
+        if (demolitionController != null && demolitionController.IsDemolitionMode
+        )
+        {
+            demolitionController.ExitDemolitionMode();
         }
 
         isCreatingRoute = true;
@@ -96,19 +120,16 @@ public sealed class TransportRouteBuilder : MonoBehaviour
     {
         Camera camera = Camera.main;
 
-        if (camera == null)
-            return null;
+        if (camera == null) return null;
 
-        Ray ray = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Ray ray = camera.ScreenPointToRay(gameInput.PointerPosition);
 
-        if (!Physics.Raycast(ray, out RaycastHit hit))
-            return null;
+        if (!Physics.Raycast(ray, out RaycastHit hit)) return null;
 
-        return hit.collider.GetComponent<BuildingInstance>();
+        return hit.collider.GetComponentInParent<BuildingInstance>();
     }
     private void SetStatus(string message)
     {
-        if (statusText != null)
-            statusText.text = message;
+        if (statusText != null) statusText.text = message;
     }
 }

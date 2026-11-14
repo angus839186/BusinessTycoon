@@ -3,6 +3,7 @@ using UnityEngine;
 
 public sealed class EconomyHud : MonoBehaviour
 {
+    [SerializeField] private MarketSystem marketSystem;
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private TransportSystem transportSystem;
 
@@ -14,6 +15,11 @@ public sealed class EconomyHud : MonoBehaviour
 
     private void Awake()
     {
+        if (marketSystem == null)
+        {
+            marketSystem =
+                FindFirstObjectByType<MarketSystem>();
+        }
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
 
@@ -23,6 +29,10 @@ public sealed class EconomyHud : MonoBehaviour
 
     private void OnEnable()
     {
+        if (marketSystem != null)
+        {
+            marketSystem.PricesChanged += Refresh;
+        }
         if (productionSystem != null)
             productionSystem.DataChanged += Refresh;
 
@@ -34,6 +44,10 @@ public sealed class EconomyHud : MonoBehaviour
 
     private void OnDisable()
     {
+        if (marketSystem != null)
+        {
+            marketSystem.PricesChanged -= Refresh;
+        }
         if (productionSystem != null)
             productionSystem.DataChanged -= Refresh;
 
@@ -65,9 +79,8 @@ public sealed class EconomyHud : MonoBehaviour
         if (totalAssetText != null)
         {
             totalAssetText.text =
-                AssetValueCalculator
-                    .CalculateTotalAssetValue(productionSystem)
-                    .ToString("N0");
+                AssetValueCalculator.CalculateTotalAssetValue(productionSystem, marketSystem)
+                .ToString("N0");
         }
     }
 

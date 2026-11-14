@@ -57,12 +57,38 @@ public sealed partial class TransportSystem
 
         Debug.Log("Transport routes cleared.");
     }
-    // SetRouteResource
-    // SetRouteAmount
-    // SetRouteEnabled
-    // RemoveRoutesForBuilding
-    // RemoveRoute
-    // FindRouteById
-    // GetAvailableRouteResources
-    // FindBuildingById
+
+    private void RefreshRouteVisuals()
+    {
+        if (routeVisualizer == null)
+            return;
+
+        routeVisualizer.ClearRoutes();
+
+        if (routes == null || pathProvider == null)
+            return;
+
+        foreach (TransportRouteDefinition route in routes)
+        {
+            if (route == null)
+                continue;
+
+            BuildingInstance source =
+                FindBuildingById(route.sourceBuildingId);
+
+            BuildingInstance target =
+                FindBuildingById(route.targetBuildingId);
+
+            if (source == null || target == null)
+                continue;
+
+            IReadOnlyList<Vector3> path =
+                pathProvider.GetPath(source, target);
+
+            routeVisualizer.ShowRoute(
+                route.routeId,
+                path
+            );
+        }
+    }
 }
