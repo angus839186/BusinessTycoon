@@ -2,6 +2,7 @@ using UnityEngine;
 
 public sealed class FinanceSummaryPanel : MonoBehaviour
 {
+    [SerializeField] private GameClock gameClock;
     [SerializeField] private ProductionSystem productionSystem;
     [SerializeField] private Transform listRoot;
     [SerializeField] private FinanceSummaryItem itemPrefab;
@@ -11,6 +12,8 @@ public sealed class FinanceSummaryPanel : MonoBehaviour
 
     private void Awake()
     {
+        if (gameClock == null)
+            gameClock = FindFirstObjectByType<GameClock>();
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
         if (itemPrefab != null && listRoot != null)
@@ -46,19 +49,13 @@ public sealed class FinanceSummaryPanel : MonoBehaviour
         {
             for (int i = 0; i < recordCount; i++)
             {
-                FinanceSummaryItem item =
-                    itemList.GetOrCreate(i);
+                FinanceSummaryItem item = itemList.GetOrCreate(i);
 
-                if (item == null)
-                    continue;
+                if (item == null) continue;
 
                 int recordIndex = recordCount - 1 - i;
 
-                item.SetData(
-                    productionSystem.MonthlyFinanceRecords[
-                        recordIndex
-                    ]
-                );
+                item.SetData(productionSystem.MonthlyFinanceRecords[recordIndex], gameClock);
             }
 
             itemList.HideFrom(recordCount);

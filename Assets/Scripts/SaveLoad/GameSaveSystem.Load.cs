@@ -21,10 +21,14 @@ public sealed partial class GameSaveSystem
             Debug.LogWarning("Load Game can only run in Play Mode.");
             return false;
         }
+        string loadPath = LoadPath;
 
-        if (!HasSaveFile)
+        if (!File.Exists(loadPath))
         {
-            Debug.LogWarning($"Save file not found: {SavePath}");
+            Debug.LogWarning(
+                $"Save file not found: {loadPath}"
+            );
+
             return false;
         }
 
@@ -44,7 +48,7 @@ public sealed partial class GameSaveSystem
 
         try
         {
-            string json = File.ReadAllText(SavePath, Encoding.UTF8);
+            string json = File.ReadAllText(loadPath, Encoding.UTF8);
             saveData = JsonUtility.FromJson<GameSaveData>(json);
         }
         catch (Exception exception)
@@ -90,9 +94,9 @@ public sealed partial class GameSaveSystem
             return false;
 
         Debug.Log(
-            $"Game loaded: {SavePath}, " +
-            $"Buildings={saveData.buildings.Count}, " +
-            $"Routes={saveData.transportRoutes.Count}"
+        $"Game loaded: {loadPath}, " +
+        $"Buildings={saveData.buildings.Count}, " +
+        $"Routes={saveData.transportRoutes.Count}"
         );
 
         return true;

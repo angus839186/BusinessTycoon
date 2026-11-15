@@ -101,7 +101,9 @@ public sealed partial class ProductionSystem : MonoBehaviour
     }
     private MonthlyFinanceRecord GetOrCreateMonthlyFinanceRecord()
     {
-        int currentMonth = gameClock != null ? gameClock.Month : 1;
+        int currentMonth = gameClock != null
+        ? gameClock.MonthIndex + 1
+        : 1;
 
         foreach (MonthlyFinanceRecord record in monthlyFinanceRecords)
         {

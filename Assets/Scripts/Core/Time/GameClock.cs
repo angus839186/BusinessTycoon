@@ -5,29 +5,43 @@ public sealed class GameClock : MonoBehaviour
 {
     [SerializeField] private float gameMinutesPerRealSecond = 1f;
     [SerializeField] private int daysPerMonth = 30;
-
+    [SerializeField] private int startYear = 2026;
     [SerializeField] private float minSpeedMultiplier = 0.25f;
     [SerializeField] private float maxSpeedMultiplier = 4f;
     [SerializeField] private float speedStep = 0.25f;
 
+    private const int MonthsPerYear = 12;
     private float speedMultiplier = 1f;
-    private int lastDisplayedMonth = 1;
+    private int lastDisplayedMonth = 0;
     private int lastDisplayedMinute = -1;
+    public float SpeedMultiplier => speedMultiplier;
+    private double totalGameMinutes;
+    public double TotalGameMinutes => totalGameMinutes;
+    private int ValidDaysPerMonth => Mathf.Max(1, daysPerMonth);
 
+    private double MinutesPerMonth =>
+        ValidDaysPerMonth * 24d * 60d;
+
+    public int MonthIndex =>
+        (int)(totalGameMinutes / MinutesPerMonth);
+
+    public int Year =>
+        Mathf.Max(1, startYear) + MonthIndex / MonthsPerYear;
+
+    public int Month =>
+        MonthIndex % MonthsPerYear + 1;
+
+    public int Day =>
+        (int)(totalGameMinutes / (24 * 60)) % ValidDaysPerMonth + 1;
+
+    public int Hour =>
+        (int)(totalGameMinutes / 60) % 24;
+
+    public int Minute =>
+        (int)(totalGameMinutes % 60);
     public event Action MonthChanged;
     public event Action TimeChanged;
     public event Action SpeedChanged;
-
-    public float SpeedMultiplier => speedMultiplier;
-
-    private double totalGameMinutes;
-
-    public double TotalGameMinutes => totalGameMinutes;
-
-    public int Month => (int)(totalGameMinutes / (daysPerMonth * 24 * 60)) + 1;
-    public int Day => (int)(totalGameMinutes / (24 * 60)) % daysPerMonth + 1;
-    public int Hour => (int)(totalGameMinutes / 60) % 24;
-    public int Minute => (int)(totalGameMinutes % 60);
 
     private void Update()
     {
@@ -36,7 +50,7 @@ public sealed class GameClock : MonoBehaviour
             gameMinutesPerRealSecond *
             speedMultiplier;
 
-        int currentMonth = Month;
+        int currentMonth = MonthIndex;
 
         if (currentMonth != lastDisplayedMonth)
         {
@@ -46,8 +60,7 @@ public sealed class GameClock : MonoBehaviour
 
         int currentDisplayedMinute = (int)totalGameMinutes;
 
-        if (currentDisplayedMinute == lastDisplayedMinute)
-            return;
+        if (currentDisplayedMinute == lastDisplayedMinute) return;
 
         lastDisplayedMinute = currentDisplayedMinute;
         TimeChanged?.Invoke();
@@ -55,16 +68,51 @@ public sealed class GameClock : MonoBehaviour
 
     public string GetDisplayText()
     {
-        return $"{Month:00}:{Day:00}:{Hour:00}:{Minute:00}";
+        return
+            $"{Year}年/{Month}月/{Day}日/" +
+            $"{Hour}時/{Minute}分";
+    }
+    public string FormatMonth(int monthNumber)
+    {
+        int monthIndex =
+            Math.Max(0, monthNumber - 1);
+
+        int year =
+            Mathf.Max(1, startYear) +
+            monthIndex / MonthsPerYear;
+
+        int month =
+            monthIndex % MonthsPerYear + 1;
+
+        return $"{year}年/{month}月";
     }
     public string FormatMinutes(double gameMinutes)
     {
-        int month = (int)(gameMinutes / (daysPerMonth * 24 * 60)) + 1;
-        int day = (int)(gameMinutes / (24 * 60)) % daysPerMonth + 1;
-        int hour = (int)(gameMinutes / 60) % 24;
-        int minute = (int)(gameMinutes % 60);
+        gameMinutes = Math.Max(0, gameMinutes);
 
-        return $"{month:00}:{day:00}:{hour:00}:{minute:00}";
+        int monthIndex =
+            (int)(gameMinutes / MinutesPerMonth);
+
+        int year =
+            Mathf.Max(1, startYear) +
+            monthIndex / MonthsPerYear;
+
+        int month =
+            monthIndex % MonthsPerYear + 1;
+
+        int day =
+            (int)(gameMinutes / (24 * 60)) %
+            ValidDaysPerMonth + 1;
+
+        int hour =
+            (int)(gameMinutes / 60) % 24;
+
+        int minute =
+            (int)(gameMinutes % 60);
+
+        return
+            $"{year}年/{month}月/{day}日/" +
+            $"{hour}時/{minute}分";
     }
     public void IncreaseSpeed()
     {
@@ -85,8 +133,7 @@ public sealed class GameClock : MonoBehaviour
     {
         float clamped = Mathf.Clamp(multiplier, minSpeedMultiplier, maxSpeedMultiplier);
 
-        if (Mathf.Approximately(speedMultiplier, clamped))
-            return;
+        if (Mathf.Approximately(speedMultiplier, clamped)) return;
 
         speedMultiplier = clamped;
         SpeedChanged?.Invoke();
@@ -94,8 +141,7 @@ public sealed class GameClock : MonoBehaviour
     }
     public void RestoreState(
     double restoredGameMinutes,
-    float restoredSpeedMultiplier
-)
+    float restoredSpeedMultiplier)
     {
         if (
             double.IsNaN(restoredGameMinutes) ||
@@ -122,7 +168,7 @@ public sealed class GameClock : MonoBehaviour
         );
 
         lastDisplayedMinute = (int)totalGameMinutes;
-        lastDisplayedMonth = Month;
+        lastDisplayedMonth = MonthIndex;
 
         SpeedChanged?.Invoke();
         TimeChanged?.Invoke();

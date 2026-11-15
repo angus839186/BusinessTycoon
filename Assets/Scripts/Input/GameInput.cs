@@ -18,10 +18,10 @@ public sealed class GameInput : MonoBehaviour
     private InputAction zoom;
     private InputAction pan;
     private InputAction panHold;
-
     private InputAction cancel;
     private InputAction speedUp;
     private InputAction speedDown;
+    private InputAction toggleMenu;
 
     private bool initialized;
 
@@ -30,6 +30,7 @@ public sealed class GameInput : MonoBehaviour
     public event Action CancelPressed;
     public event Action SpeedUpPressed;
     public event Action SpeedDownPressed;
+    public event Action MenuTogglePressed;
 
     private readonly List<RaycastResult> uiRaycastResults = new List<RaycastResult>();
 
@@ -67,6 +68,7 @@ public sealed class GameInput : MonoBehaviour
         cancel.performed += HandleCancel;
         speedUp.performed += HandleSpeedUp;
         speedDown.performed += HandleSpeedDown;
+        toggleMenu.performed += HandleMenuToggle;
 
         mapActions.Enable();
         globalActions.Enable();
@@ -82,6 +84,7 @@ public sealed class GameInput : MonoBehaviour
         cancel.performed -= HandleCancel;
         speedUp.performed -= HandleSpeedUp;
         speedDown.performed -= HandleSpeedDown;
+        toggleMenu.performed -= HandleMenuToggle;
 
         mapActions.Disable();
         globalActions.Disable();
@@ -117,6 +120,7 @@ public sealed class GameInput : MonoBehaviour
         cancel = globalActions.FindAction("Cancel", true);
         speedUp = globalActions.FindAction("SpeedUp", true);
         speedDown = globalActions.FindAction("SpeedDown", true);
+        toggleMenu = globalActions.FindAction("ToggleMenu", true);
 
         initialized = true;
     }
@@ -144,6 +148,10 @@ public sealed class GameInput : MonoBehaviour
     private void HandleSpeedDown(InputAction.CallbackContext context)
     {
         SpeedDownPressed?.Invoke();
+    }
+    private void HandleMenuToggle(InputAction.CallbackContext context)
+    {
+        MenuTogglePressed?.Invoke();
     }
     public bool IsPointerOverUI()
     {

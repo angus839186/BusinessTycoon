@@ -7,21 +7,22 @@ public sealed class FinanceSummaryItem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI expenseText;
     [SerializeField] private TextMeshProUGUI netText;
 
-    public void SetData(MonthlyFinanceRecord record)
+    public void SetData(MonthlyFinanceRecord record, GameClock gameClock)
     {
-        if (record == null)
-            return;
+        if (record == null) return;
 
         if (monthText != null)
-            monthText.text = $"第 {record.month} 月";
+        {
+            monthText.text =
+                gameClock != null
+                    ? gameClock.FormatMonth(record.month)
+                    : $"第 {record.month} 月";
+        }
 
-        if (incomeText != null)
-            incomeText.text = record.income.ToString();
+        if (incomeText != null) incomeText.text = record.income.ToString();
 
-        if (expenseText != null)
-            expenseText.text = record.expense.ToString();
+        if (expenseText != null) expenseText.text = record.expense.ToString();
 
-        if (netText != null)
-            netText.text = record.Net.ToString();
+        if (netText != null) netText.text = record.Net.ToString();
     }
 }
