@@ -11,4 +11,6 @@ public sealed class GameRulesConfig
     public float commercialSalePriceMultiplier = 1f;
     public float resourceProductionSpeedMultiplier = 1f;
     public float transportIntervalMultiplier = 1f;
+    public bool autoSaveEnabled = true;
+    public float autoSaveIntervalMinutes = 5f;
 }

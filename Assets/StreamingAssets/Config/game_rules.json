@@ -6,6 +6,8 @@
     "minutes": 0
   },
   "demolitionCostRate": 0.2,
+  "autoSaveEnabled": true,
+  "autoSaveIntervalMinutes": 5,
   "constructionCostMultiplier": 1,
   "maintenanceCostMultiplier": 1,
   "commercialSalePriceMultiplier": 1,

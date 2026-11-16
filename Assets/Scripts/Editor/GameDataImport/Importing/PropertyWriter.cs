@@ -43,7 +43,6 @@ public static class PropertyWriter
         if (field.FieldType == typeof(Sprite) &&
     string.IsNullOrWhiteSpace(rawValue))
         {
-            // Blank icon paths preserve existing icons.
             return true;
         }
 

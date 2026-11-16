@@ -5,6 +5,7 @@ public sealed class GameSystemPanel : MonoBehaviour
 {
     [SerializeField] private GameSaveSystem gameSaveSystem;
     [SerializeField] private PanelController panelController;
+    [SerializeField] private SaveSlotPanel saveSlotPanel;
 
     private void Awake()
     {
@@ -14,6 +15,11 @@ public sealed class GameSystemPanel : MonoBehaviour
         if (panelController == null)
             panelController =
                 FindFirstObjectByType<PanelController>();
+        if (saveSlotPanel == null)
+        {
+            saveSlotPanel =
+                FindFirstObjectByType<SaveSlotPanel>();
+        }
     }
 
     public void ContinueGame()
@@ -24,13 +30,42 @@ public sealed class GameSystemPanel : MonoBehaviour
 
     public void SaveGame()
     {
-        if (gameSaveSystem == null)
+        if (saveSlotPanel == null)
         {
-            Debug.LogError("GameSaveSystem missing.");
+            Debug.LogError(
+                "GameSystemPanel 找不到 SaveSlotPanel。",
+                this
+            );
+
             return;
         }
 
-        gameSaveSystem.SaveGame();
+        if (panelController != null)
+        {
+            panelController.CloseCurrentPanel();
+        }
+
+        saveSlotPanel.OpenSave();
+    }
+
+    public void LoadGame()
+    {
+        if (saveSlotPanel == null)
+        {
+            Debug.LogError(
+                "GameSystemPanel 找不到 SaveSlotPanel。",
+                this
+            );
+
+            return;
+        }
+
+        if (panelController != null)
+        {
+            panelController.CloseCurrentPanel();
+        }
+
+        saveSlotPanel.OpenLoad();
     }
 
     public void ReturnToGameMenu()

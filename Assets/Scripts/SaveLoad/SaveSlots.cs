@@ -1,18 +1,25 @@
 using System;
 using System.IO;
 using UnityEngine;
+using System.Text;
+using System.Collections.Generic;
 
 public static class SaveSlots
 {
     public const string DefaultId = "slot_1";
-
     private const string FolderName = "Saves";
+    public const string AutoSaveId = "autosave";
 
+    private static readonly string[] slotIds =
+    {
+        "slot_1",
+        "slot_2",
+        "slot_3"
+    };
+
+    public static IReadOnlyList<string> Ids => slotIds;
     public static string FolderPath =>
-        Path.Combine(
-            Application.persistentDataPath,
-            FolderName
-        );
+        Path.Combine(Application.persistentDataPath, FolderName);
 
     public static string GetPath(string slotId)
     {
@@ -35,9 +42,193 @@ public static class SaveSlots
         return File.Exists(GetPath(slotId));
     }
 
+    public static bool TryDelete(
+    string slotId,
+    out string errorMessage
+)
+    {
+        errorMessage = string.Empty;
+
+        if (!IsKnownId(slotId))
+        {
+            errorMessage =
+                $"未知的存檔槽：{slotId}";
+
+            return false;
+        }
+
+
+
+        string path = GetPath(slotId);
+
+        if (!File.Exists(path))
+        {
+            errorMessage = "存檔不存在。";
+            return false;
+        }
+
+        try
+        {
+            File.Delete(path);
+
+            if (File.Exists(path))
+            {
+                errorMessage = "存檔刪除失敗。";
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception exception)
+        {
+            errorMessage = exception.Message;
+            return false;
+        }
+    }
+
     public static void EnsureFolder()
     {
         Directory.CreateDirectory(FolderPath);
+    }
+
+    public static SaveSlotInfo GetInfo(string slotId)
+    {
+        string path = GetPath(slotId);
+
+        SaveSlotInfo info = new SaveSlotInfo
+        {
+            SlotId = slotId,
+            FilePath = path,
+            Exists = File.Exists(path),
+            CanLoad = false
+        };
+
+        if (!info.Exists)
+            return info;
+
+        try
+        {
+            string json =
+                File.ReadAllText(path, Encoding.UTF8);
+
+            GameSaveData saveData =
+                JsonUtility.FromJson<GameSaveData>(json);
+
+            if (saveData == null)
+            {
+                info.ErrorMessage =
+                    "Save data is empty.";
+
+                return info;
+            }
+
+            info.SavedAt =
+                File.GetLastWriteTime(path);
+
+            info.TotalGameMinutes =
+                Math.Max(0d, saveData.totalGameMinutes);
+
+            info.SaveVersion =
+                saveData.saveVersion;
+
+            info.CanLoad =
+                GameSaveSystem.CanLoadVersion(
+                    saveData.saveVersion
+                );
+
+            if (!info.CanLoad)
+            {
+                info.ErrorMessage =
+                    $"Unsupported save version: " +
+                    $"{saveData.saveVersion}";
+            }
+        }
+        catch (Exception exception)
+        {
+            info.ErrorMessage = exception.Message;
+        }
+
+        return info;
+    }
+
+    public static IReadOnlyList<SaveSlotInfo> GetInfos()
+    {
+        List<SaveSlotInfo> result =
+            new List<SaveSlotInfo>(slotIds.Length);
+
+        foreach (string slotId in slotIds)
+        {
+            result.Add(GetInfo(slotId));
+        }
+
+        return result;
+    }
+
+    public static IReadOnlyList<SaveSlotInfo>
+    GetLoadInfos()
+    {
+        List<SaveSlotInfo> result =
+            new List<SaveSlotInfo>(
+                slotIds.Length + 1
+            );
+
+        result.Add(GetInfo(AutoSaveId));
+
+        foreach (string slotId in slotIds)
+        {
+            result.Add(GetInfo(slotId));
+        }
+
+        return result;
+    }
+
+    public static bool HasLoadableSave()
+    {
+        foreach (SaveSlotInfo info in GetLoadInfos())
+        {
+            if (
+                info != null &&
+                info.Exists &&
+                info.CanLoad &&
+                string.IsNullOrWhiteSpace(
+                    info.ErrorMessage
+                )
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsKnownId(string slotId)
+    {
+        if (string.IsNullOrWhiteSpace(slotId))
+        {
+            return false;
+        }
+
+        if (string.Equals(slotId, AutoSaveId, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        foreach (string knownId in slotIds)
+        {
+            if (
+                string.Equals(
+                    knownId,
+                    slotId,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static bool IsValidId(string slotId)

@@ -265,8 +265,6 @@ new Dictionary<Type, HashSet<string>>();
                     );
                 }
 
-                // ID 空值由 ValidateId 負責，避免重複錯誤。
-                // 允許空值的欄位也不需要再做型別轉換。
                 if (column != null || isIdColumn)
                 {
                     continue;

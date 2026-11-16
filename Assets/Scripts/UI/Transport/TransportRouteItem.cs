@@ -127,7 +127,6 @@ public sealed class TransportRouteItem : MonoBehaviour
         resourceDropdown.ClearOptions();
         resourceDropdown.onValueChanged.RemoveAllListeners();
 
-        // Index 0 代表尚未選擇資源。
         resources.Add(null);
 
         List<ResourceDefinition> availableResources =

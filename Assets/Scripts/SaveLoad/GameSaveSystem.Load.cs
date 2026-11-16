@@ -121,6 +121,13 @@ public sealed partial class GameSaveSystem
         return saveData.saveVersion == CurrentSaveVersion;
     }
 
+    public static bool CanLoadVersion(int version)
+    {
+        return
+            version == 1 ||
+            version == CurrentSaveVersion;
+    }
+
     private void RestoreGameState(GameSaveData saveData)
     {
         gameClock.RestoreState(

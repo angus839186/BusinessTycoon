@@ -12,11 +12,9 @@ public sealed class MapModeController : MonoBehaviour
 {
     [SerializeField] private GameInput gameInput;
     [SerializeField] private PanelController panelManager;
-
     [SerializeField] private BuildingPlacementController placement;
-
     [SerializeField] private BuildingDemolitionController demolition;
-
+    [SerializeField] private BuildingSelector buildingSelector;
     [SerializeField] private TransportRouteBuilder routeBuilder;
 
     public MapMode CurrentMode
@@ -42,20 +40,17 @@ public sealed class MapModeController : MonoBehaviour
     private void Awake()
     {
         if (gameInput == null)
-        {
             gameInput = FindFirstObjectByType<GameInput>();
-        }
         if (panelManager == null)
             panelManager = FindFirstObjectByType<PanelController>();
-
         if (placement == null)
             placement = FindFirstObjectByType<BuildingPlacementController>();
-
         if (demolition == null)
             demolition = FindFirstObjectByType<BuildingDemolitionController>();
-
         if (routeBuilder == null)
             routeBuilder = FindFirstObjectByType<TransportRouteBuilder>();
+        if (buildingSelector == null)
+            buildingSelector = FindFirstObjectByType<BuildingSelector>();
     }
 
     private void OnEnable()
@@ -89,6 +84,7 @@ public sealed class MapModeController : MonoBehaviour
     public void StartPlacementMode()
     {
         CancelMapMode();
+        ClearBuildingSelection();
 
         if (placement != null)
         {
@@ -105,6 +101,7 @@ public sealed class MapModeController : MonoBehaviour
         }
 
         CancelMapMode();
+        ClearBuildingSelection();
 
         if (demolition != null)
         {
@@ -115,6 +112,7 @@ public sealed class MapModeController : MonoBehaviour
     public void StartRouteMode()
     {
         CancelMapMode();
+        ClearBuildingSelection();
 
         if (routeBuilder != null)
         {
@@ -144,5 +142,13 @@ public sealed class MapModeController : MonoBehaviour
 
         if (routeBuilder != null && routeBuilder.IsCreatingRoute)
             routeBuilder.CancelCreateRoute();
+    }
+
+    private void ClearBuildingSelection()
+    {
+        if (buildingSelector != null)
+        {
+            buildingSelector.ClearSelection();
+        }
     }
 }

@@ -46,7 +46,9 @@ public sealed class GameRules : MonoBehaviour
                 hours = 1,
                 minutes = 0
             },
-            demolitionCostRate = 0.2f
+            demolitionCostRate = 0.2f,
+            autoSaveEnabled = true,
+            autoSaveIntervalMinutes = 5f
         };
     }
     public float DemolitionCostRate
@@ -59,6 +61,18 @@ public sealed class GameRules : MonoBehaviour
             return Mathf.Clamp01(config.demolitionCostRate);
         }
     }
+    public bool AutoSaveEnabled =>
+    config != null
+        ? config.autoSaveEnabled
+        : true;
+
+    public float AutoSaveIntervalMinutes =>
+        config != null
+            ? Mathf.Max(
+                0.1f,
+                config.autoSaveIntervalMinutes
+            )
+            : 5f;
     public float ConstructionCostMultiplier =>
     config != null ? Mathf.Max(0.01f, config.constructionCostMultiplier) : 1f;
 

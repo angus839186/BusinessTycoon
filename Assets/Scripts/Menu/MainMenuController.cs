@@ -1,34 +1,84 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class MainMenuController : MonoBehaviour
 {
+    [SerializeField] private LoadingController loadingController;
     [SerializeField] private Button continueButton;
 
-    private void Start()
+    [SerializeField] private SaveSlotPanel saveSlotPanel;
+    private void Awake()
     {
-        if (continueButton != null)
-            continueButton.interactable =
-                GameSaveSystem.DefaultSaveExists;
+        if (loadingController == null)
+        {
+            loadingController =
+                FindFirstObjectByType<LoadingController>();
+        }
+    }
+    private void OnEnable()
+    {
+        if (saveSlotPanel != null)
+        {
+            saveSlotPanel.SlotsChanged +=
+                RefreshContinueButton;
+        }
+
+        RefreshContinueButton();
+    }
+
+    private void OnDisable()
+    {
+        if (saveSlotPanel != null)
+        {
+            saveSlotPanel.SlotsChanged -=
+                RefreshContinueButton;
+        }
+    }
+
+    private void RefreshContinueButton()
+    {
+        if (continueButton == null)
+        {
+            return;
+        }
+
+        continueButton.interactable =
+            SaveSlots.HasLoadableSave();
     }
 
     public void StartNewGame()
     {
+        if (loadingController == null)
+        {
+            Debug.LogError(
+                "MainMenuController 找不到 LoadingController。",
+                this
+            );
+
+            return;
+        }
+
         GameLaunchRequest.RequestNewGame();
-        SceneManager.LoadScene(SceneNames.Main);
+
+        loadingController.LoadScene(
+            SceneNames.Main,
+            "建立新遊戲..."
+        );
     }
 
     public void ContinueGame()
     {
-        if (!GameSaveSystem.DefaultSaveExists)
+        if (saveSlotPanel == null)
         {
-            Debug.LogWarning("Save file not found.");
+            Debug.LogError(
+                "MainMenu 尚未設定 SaveSlotPanel。",
+                this
+            );
+
             return;
         }
 
-        GameLaunchRequest.RequestContinueGame();
-        SceneManager.LoadScene(SceneNames.Main);
+        saveSlotPanel.OpenLoad();
     }
 
     public void QuitGame()

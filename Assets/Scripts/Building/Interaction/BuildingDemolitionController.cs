@@ -25,34 +25,25 @@ public sealed class BuildingDemolitionController : MonoBehaviour
             buildingPlacement = FindFirstObjectByType<BuildingPlacementController>();
         if (productionSystem == null)
             productionSystem = FindFirstObjectByType<ProductionSystem>();
-
         if (transport == null)
             transport = FindFirstObjectByType<TransportSystem>();
 
         if (gameRules == null)
             gameRules = FindFirstObjectByType<GameRules>();
         if (buildingSelector == null)
-        {
             buildingSelector = FindFirstObjectByType<BuildingSelector>();
-        }
     }
 
     private void OnEnable()
     {
         if (gameInput != null)
-        {
-            gameInput.PrimaryPressed +=
-                HandlePrimaryPressed;
-        }
+            gameInput.PrimaryPressed += HandlePrimaryPressed;
     }
 
     private void OnDisable()
     {
         if (gameInput != null)
-        {
-            gameInput.PrimaryPressed -=
-                HandlePrimaryPressed;
-        }
+            gameInput.PrimaryPressed -= HandlePrimaryPressed;
     }
 
     private void HandlePrimaryPressed()
@@ -146,18 +137,12 @@ public sealed class BuildingDemolitionController : MonoBehaviour
     private void TryDemolishClickedBuilding()
     {
         Camera camera = Camera.main;
-
-        if (camera == null || gameInput == null)
-            return;
-
+        if (camera == null || gameInput == null)return;
         Ray ray = camera.ScreenPointToRay(gameInput.PointerPosition);
 
-        if (!Physics.Raycast(ray, out RaycastHit hit))
-            return;
-
+        if (!Physics.Raycast(ray, out RaycastHit hit))return;
         BuildingInstance building =
-            hit.collider
-                .GetComponentInParent<BuildingInstance>();
+            hit.collider.GetComponentInParent<BuildingInstance>();
 
         TryDemolish(building);
     }
