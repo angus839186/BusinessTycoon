@@ -4173,6 +4173,7 @@ MonoBehaviour:
   buildingPlacement: {fileID: 1594526091}
   transportSystem: {fileID: 398091279}
   routeBuilder: {fileID: 531234115}
+  mapPointer: {fileID: 1470055397}
 --- !u!1 &1470055395
 GameObject:
   m_ObjectHideFlags: 0
@@ -4220,6 +4221,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapPointer
   gameInput: {fileID: 0}
+  mapMode: {fileID: 1470055398}
   geoJsonProjection: {fileID: 1922258535}
   buildingPlacement: {fileID: 1594526091}
   placementPreview: {fileID: 588301133}
