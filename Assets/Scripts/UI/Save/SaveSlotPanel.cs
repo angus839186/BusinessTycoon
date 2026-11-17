@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System;
 
@@ -16,7 +15,8 @@ public sealed class SaveSlotPanel : MonoBehaviour
     [Header("Systems")]
     [SerializeField] private GameInput gameInput;
     [SerializeField] private GameSaveSystem gameSaveSystem;
-    
+    [SerializeField] private LoadingController loadingController;
+
     [Header("UI")]
     [SerializeField] private NoticeUI noticeUI;
     [SerializeField] private GameObject windowRoot;
@@ -26,8 +26,7 @@ public sealed class SaveSlotPanel : MonoBehaviour
     [SerializeField] private Button closeButton;
     [SerializeField] private TextMeshProUGUI feedbackText;
 
-    [Header("Dialog")]
-    [SerializeField] private ConfirmDialog confirmDialog;
+    [Header("Dialog")][SerializeField] private ConfirmDialog confirmDialog;
 
     public event Action SlotsChanged;
     private ReusableUIList<SaveSlotItem> itemList;
@@ -37,25 +36,21 @@ public sealed class SaveSlotPanel : MonoBehaviour
     {
         if (gameInput == null)
         {
-            gameInput =
-                FindFirstObjectByType<GameInput>();
+            gameInput = FindFirstObjectByType<GameInput>();
         }
         if (gameSaveSystem == null)
         {
-            gameSaveSystem =
-                FindFirstObjectByType<GameSaveSystem>();
+            gameSaveSystem = FindFirstObjectByType<GameSaveSystem>();
         }
 
-        if (
-            itemPrefab != null &&
-            listRoot != null
-        )
+        if (loadingController == null)
         {
-            itemList =
-                new ReusableUIList<SaveSlotItem>(
-                    itemPrefab,
-                    listRoot
-                );
+            loadingController = FindFirstObjectByType<LoadingController>();
+        }
+
+        if (itemPrefab != null && listRoot != null)
+        {
+            itemList = new ReusableUIList<SaveSlotItem>(itemPrefab, listRoot);
         }
 
         if (closeButton != null)
@@ -69,8 +64,7 @@ public sealed class SaveSlotPanel : MonoBehaviour
         }
         if (noticeUI == null)
         {
-            noticeUI =
-                FindFirstObjectByType<NoticeUI>();
+            noticeUI = FindFirstObjectByType<NoticeUI>();
         }
     }
     private void OnEnable()
@@ -346,6 +340,12 @@ public sealed class SaveSlotPanel : MonoBehaviour
     {
         if (gameSaveSystem != null)
         {
+            if (loadingController == null)
+            {
+                ShowError("找不到載入畫面控制器。");
+                return;
+            }
+
             if (!gameSaveSystem.SetActiveSlot(slotId))
             {
                 ShowError(
@@ -355,17 +355,21 @@ public sealed class SaveSlotPanel : MonoBehaviour
                 return;
             }
 
-            if (!gameSaveSystem.TryLoadGame())
-            {
-                ShowError(
-                    "讀取失敗，請確認存檔是否有效。"
-                );
+            loadingController.RunTask(
+                "讀取遊戲...",
+                gameSaveSystem.TryLoadGame,
+                HandleLoadCompleted
+            );
 
-                return;
-            }
+            return;
+        }
 
-            ShowSuccess("遊戲已讀取。");
-            Close();
+        if (loadingController == null)
+        {
+            ShowError(
+                "找不到載入畫面控制器。"
+            );
+
             return;
         }
 
@@ -380,7 +384,25 @@ public sealed class SaveSlotPanel : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene(SceneNames.Main);
+        loadingController.LoadScene(
+            SceneNames.Main,
+            "讀取遊戲..."
+        );
+    }
+
+    private void HandleLoadCompleted(bool succeeded)
+    {
+        if (!succeeded)
+        {
+            ShowError(
+                "讀取失敗，請確認存檔是否有效。"
+            );
+
+            return;
+        }
+
+        ShowSuccess("遊戲已讀取。");
+        Close();
     }
     private void HandleCancelPressed()
     {

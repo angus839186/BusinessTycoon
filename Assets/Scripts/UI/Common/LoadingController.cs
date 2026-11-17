@@ -57,6 +57,44 @@ public sealed class LoadingController : MonoBehaviour
         );
     }
 
+    public void RunTask(
+    string message,
+    Func<bool> task,
+    Action<bool> onCompleted = null
+)
+    {
+        if (loadCoroutine != null)
+            return;
+
+        if (task == null)
+        {
+            Debug.LogError(
+                "LoadingController 收到空白工作。",
+                this
+            );
+
+            return;
+        }
+
+        if (loadingUI == null)
+        {
+            Debug.LogError(
+                "LoadingController 找不到 LoadingUI。",
+                this
+            );
+
+            return;
+        }
+
+        loadCoroutine = StartCoroutine(
+            RunTaskRoutine(
+                message,
+                task,
+                onCompleted
+            )
+        );
+    }
+
     private IEnumerator LoadSceneRoutine(
         string sceneName,
         string message
@@ -111,5 +149,35 @@ public sealed class LoadingController : MonoBehaviour
 
         loadingUI.SetProgress(1f);
         loadCoroutine = null;
+    }
+    private IEnumerator RunTaskRoutine(
+        string message,
+        Func<bool> task,
+        Action<bool> onCompleted
+    )
+    {
+        loadingUI.Show(message);
+
+        yield return null;
+
+        bool succeeded = false;
+
+        try
+        {
+            succeeded = task.Invoke();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception, this);
+        }
+
+        loadingUI.SetProgress(1f);
+
+        yield return null;
+
+        loadingUI.Hide();
+        loadCoroutine = null;
+
+        onCompleted?.Invoke(succeeded);
     }
 }

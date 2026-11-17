@@ -11,7 +11,7 @@ using UnityEngine;
 [GameDataColumnAlias("enabled", "isEnabled")]
 [CreateAssetMenu(
     fileName = "ResourceDefinition",
-    menuName = "WorldMap/Resource Definition"
+    menuName = "BusinessTycoon/Resource Definition"
 )]
 public sealed class ResourceDefinition : ScriptableObject
 {

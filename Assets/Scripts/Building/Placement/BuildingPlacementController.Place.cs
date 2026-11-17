@@ -2,24 +2,19 @@ using UnityEngine;
 
 public sealed partial class BuildingPlacementController
 {
-    public void PlaceBuilding(
-        Vector3 worldPosition,
-        double longitude,
-        double latitude
-    )
+    public void PlaceBuilding(Vector3 worldPosition, double longitude, double latitude)
     {
         if (selectedBuilding == null)
         {
-            Debug.Log("No building selected.");
+            const string message = "No building selected.";
+            Debug.Log(message);
+            PlacementFailed?.Invoke(message);
             return;
         }
 
-        ResourceAmount[] paidConstructionCosts =
-            selectedBuilding.constructionCosts;
+        ResourceAmount[] paidConstructionCosts = selectedBuilding.constructionCosts;
 
-        if (
-            productionSystem != null &&
-            !productionSystem.TryPayConstructionCost(
+        if (productionSystem != null && !productionSystem.TryPayConstructionCost(
                 selectedBuilding,
                 worldPosition,
                 longitude,
@@ -28,26 +23,31 @@ public sealed partial class BuildingPlacementController
             )
         )
         {
-            Debug.Log(
-                $"Cannot Build: not enough resources for " +
-                $"{selectedBuilding.displayName}"
-            );
+            string message =
+            $"Cannot Build: not enough resources for " +
+            $"{selectedBuilding.displayName}";
+
+            Debug.Log(message);
+            PlacementFailed?.Invoke(message);
+
             return;
         }
 
-        string instanceId =
-            $"{selectedBuilding.buildingId}_{nextBuildingInstanceIndex}";
+        string instanceId = $"{selectedBuilding.buildingId}_{nextBuildingInstanceIndex}";
 
         nextBuildingInstanceIndex++;
 
-        CreateBuildingInstance(
-            selectedBuilding,
-            instanceId,
-            worldPosition,
-            longitude,
-            latitude,
-            paidConstructionCosts
-        );
+        BuildingInstance instance =
+            CreateBuildingInstance(
+                selectedBuilding,
+                instanceId,
+                worldPosition,
+                longitude,
+                latitude,
+                paidConstructionCosts
+            );
+
+        BuildingPlaced?.Invoke(instance);
 
         Debug.Log(
             $"Building Placed: Building={selectedBuilding.displayName}, " +

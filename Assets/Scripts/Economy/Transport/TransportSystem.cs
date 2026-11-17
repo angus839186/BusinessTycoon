@@ -14,22 +14,21 @@ public sealed partial class TransportSystem : MonoBehaviour
     [SerializeField] private bool useDefinedRoutes = false;
     [SerializeField] private TransportRouteDefinition[] routes;
 
-    public IReadOnlyList<TransportRouteDefinition> Routes =>
-    routes ?? Array.Empty<TransportRouteDefinition>();
-
     [SerializeField] private GameClock gameClock;
-
-    private readonly List<TransportRecord> transportRecords = new List<TransportRecord>();
-
-    [SerializeField] private int maxTransportRecords = 50;
-
-    public IReadOnlyList<TransportRecord> TransportRecords =>
-        transportRecords;
-    public int RouteVersion { get; private set; }
 
     [SerializeField] private MonoBehaviour pathProviderBehaviour;
 
+    [SerializeField] private int maxTransportRecords = 50;
+    private readonly List<TransportRecord> transportRecords = new List<TransportRecord>();
+    public IReadOnlyList<TransportRouteDefinition> Routes =>
+    routes ?? Array.Empty<TransportRouteDefinition>();
+
+    public IReadOnlyList<TransportRecord> TransportRecords =>
+        transportRecords;
+
     private ITransportPathProvider pathProvider;
+    public int RouteVersion { get; private set; }
+
 
     private double lastTransferGameMinutes;
     public double LastTransferGameMinutes => lastTransferGameMinutes;
@@ -39,6 +38,7 @@ public sealed partial class TransportSystem : MonoBehaviour
 
     public event Action RoutesChanged;
     public event Action TransportChanged;
+    public event Action<TransportRouteDefinition> RouteCreated;
 
     private void Awake()
     {

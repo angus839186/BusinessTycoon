@@ -7,8 +7,6 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
     [SerializeField] private BuildingDefinition selectedBuilding;
     [SerializeField] private BuildingDemolitionController demolitionController;
 
-    public event Action<BuildingDefinition> SelectedBuildingChanged;
-    public event Action<bool> PlacementModeChanged;
     public BuildingDefinition SelectedBuilding => selectedBuilding;
     private int nextBuildingInstanceIndex = 1;
     public int NextBuildingInstanceIndex => nextBuildingInstanceIndex;
@@ -16,6 +14,10 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
     private bool isPlacementMode;
 
     public bool IsPlacementMode => isPlacementMode;
+    public event Action<BuildingDefinition> SelectedBuildingChanged;
+    public event Action<bool> PlacementModeChanged;
+    public event Action<BuildingInstance> BuildingPlaced;
+    public event Action<string> PlacementFailed;
 
     private void Awake()
     {

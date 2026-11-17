@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System;
 
 public sealed class TransportRouteBuilder : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public sealed class TransportRouteBuilder : MonoBehaviour
     private bool isCreatingRoute;
     public bool IsCreatingRoute => isCreatingRoute;
     private BuildingInstance selectedSource;
+
+    public event Action<string> RouteFailed;
 
     private void Awake()
     {
@@ -44,18 +47,48 @@ public sealed class TransportRouteBuilder : MonoBehaviour
 
     private void HandlePrimaryPressed()
     {
-        if (!isCreatingRoute || gameInput == null || gameInput.IsPointerOverUI())
+        if (
+            !isCreatingRoute ||
+            gameInput == null ||
+            gameInput.IsPointerOverUI()
+        )
+        {
+            return;
+        }
+
+        BuildingInstance clickedBuilding =
+            RaycastBuilding();
+
+        if (clickedBuilding == null)
             return;
 
-        BuildingInstance clickedBuilding = RaycastBuilding();
-
-        if (clickedBuilding == null) return;
+        if (clickedBuilding.Definition == null)
+        {
+            ReportFailure("建築資料無效。");
+            return;
+        }
 
         if (selectedSource == null)
         {
+            if (transport.HasOutgoingRoute(
+                    clickedBuilding.InstanceId
+                ))
+            {
+                ReportFailure(
+                $"{clickedBuilding.Definition.displayName} " +
+                "已經有輸出路線。"
+            );
+
+                return;
+            }
+
             selectedSource = clickedBuilding;
 
-            SetStatus($"來源：{selectedSource.Definition.displayName}，" + "請選擇目標建築");
+            SetStatus(
+                $"已選擇起點：" +
+                $"{selectedSource.Definition.displayName}，" +
+                "請選擇終點建築。"
+            );
 
             Debug.Log(
                 $"Route Source Selected: " +
@@ -65,14 +98,24 @@ public sealed class TransportRouteBuilder : MonoBehaviour
             return;
         }
 
-        if (clickedBuilding == selectedSource) return;
+        if (clickedBuilding == selectedSource)
+        {
+            ReportFailure("起點與終點不能是同一棟建築。");
 
-        transport.AddDefinedRoute(
-            selectedSource,
-            clickedBuilding
-        );
+            return;
+        }
 
-        SetStatus("路線已建立");
+        if (!transport.TryAddDefinedRoute(
+                selectedSource,
+                clickedBuilding,
+                out string errorMessage
+            ))
+        {
+            ReportFailure(errorMessage);
+            return;
+        }
+
+        SetStatus("路線已建立。");
         StopCreateRoute();
     }
 
@@ -127,6 +170,11 @@ public sealed class TransportRouteBuilder : MonoBehaviour
         if (!Physics.Raycast(ray, out RaycastHit hit)) return null;
 
         return hit.collider.GetComponentInParent<BuildingInstance>();
+    }
+    private void ReportFailure(string message)
+    {
+        SetStatus(message);
+        RouteFailed?.Invoke(message);
     }
     private void SetStatus(string message)
     {

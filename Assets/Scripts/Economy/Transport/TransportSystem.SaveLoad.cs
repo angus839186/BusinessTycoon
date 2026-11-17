@@ -16,16 +16,65 @@ public sealed partial class TransportSystem
         }
         else
         {
-            routes = new TransportRouteDefinition[restoredRoutes.Count];
+            List<TransportRouteDefinition> validRoutes = new List<TransportRouteDefinition>();
+            HashSet<string> usedSources = new HashSet<string>();
+            HashSet<string> usedTargets = new HashSet<string>();
 
-            for (int i = 0; i < restoredRoutes.Count; i++)
-                routes[i] = restoredRoutes[i];
+            foreach (TransportRouteDefinition route in restoredRoutes)
+            {
+                if (route == null || string.IsNullOrWhiteSpace(
+                    route.sourceBuildingId
+                    ) || string.IsNullOrWhiteSpace(route.targetBuildingId)
+                )
+                {
+                    Debug.LogWarning(
+                        "Skipped invalid restored route."
+                    );
+
+                    continue;
+                }
+
+                if (route.sourceBuildingId == route.targetBuildingId)
+                {
+                    Debug.LogWarning(
+                        $"Skipped route with identical " +
+                        $"source and target: {route.routeId}"
+                    );
+
+                    continue;
+                }
+
+                if (usedSources.Contains(route.sourceBuildingId))
+                {
+                    Debug.LogWarning(
+                        $"Skipped duplicate outgoing route: " +
+                        $"{route.routeId}"
+                    );
+
+                    continue;
+                }
+
+                if (usedTargets.Contains(route.targetBuildingId))
+                {
+                    Debug.LogWarning(
+                        $"Skipped duplicate incoming route: " +
+                        $"{route.routeId}"
+                    );
+
+                    continue;
+                }
+
+                usedSources.Add(route.sourceBuildingId);
+                usedTargets.Add(route.targetBuildingId);
+                validRoutes.Add(route);
+            }
+
+            routes = validRoutes.ToArray();
         }
 
         useDefinedRoutes = routes.Length > 0;
         nextRouteIndex = Mathf.Max(1, restoredNextRouteIndex);
-        lastTransferGameMinutes =
-            Math.Max(0, restoredLastTransferGameMinutes);
+        lastTransferGameMinutes = Math.Max(0, restoredLastTransferGameMinutes);
 
         transportRecords.Clear();
 

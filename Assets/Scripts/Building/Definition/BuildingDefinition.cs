@@ -48,7 +48,7 @@ public enum BuildingCategory
 [GameDataColumnAlias("enabled", "isEnabled")]
 [CreateAssetMenu(
     fileName = "BuildingDefinition",
-    menuName = "WorldMap/Building Definition"
+    menuName = "BusinessTycoon/Building Definition"
 )]
 public sealed class BuildingDefinition : ScriptableObject
 {

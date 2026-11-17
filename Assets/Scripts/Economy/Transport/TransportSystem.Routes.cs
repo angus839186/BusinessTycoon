@@ -9,33 +9,89 @@ public sealed partial class TransportSystem
     BuildingInstance target
 )
     {
+        if (!TryAddDefinedRoute(
+                source,
+                target,
+                out string errorMessage
+            ))
+        {
+            Debug.LogWarning(
+                errorMessage,
+                this
+            );
+        }
+    }
+    public bool TryAddDefinedRoute(
+        BuildingInstance source,
+        BuildingInstance target,
+        out string errorMessage
+    )
+    {
+        errorMessage = string.Empty;
+
         if (
             source == null ||
             target == null ||
-            source == target ||
             source.Definition == null ||
             target.Definition == null
         )
         {
-            return;
+            errorMessage =
+                "無法建立路線：建築資料無效。";
+
+            return false;
         }
 
-        TransportRouteDefinition route = new TransportRouteDefinition
+        if (source == target)
         {
-            routeId = $"route_{nextRouteIndex}",
-            displayName =
-                $"{source.Definition.displayName} -> " +
-                $"{target.Definition.displayName}",
-            sourceBuildingId = source.InstanceId,
-            targetBuildingId = target.InstanceId,
-            resource = null,
-            amountPerTransfer = 1,
-            enabled = true
-        };
+            errorMessage =
+                "起點與終點不能是同一棟建築。";
+
+            return false;
+        }
+
+        if (HasOutgoingRoute(source.InstanceId))
+        {
+            errorMessage =
+                $"{source.Definition.displayName} 已有輸出路線。";
+
+            return false;
+        }
+
+        if (HasIncomingRoute(target.InstanceId))
+        {
+            errorMessage =
+                $"{target.Definition.displayName} 已有輸入路線。";
+
+            return false;
+        }
+
+        TransportRouteDefinition route =
+            new TransportRouteDefinition
+            {
+                routeId =
+                    $"route_{nextRouteIndex}",
+
+                displayName =
+                    $"{source.Definition.displayName} -> " +
+                    $"{target.Definition.displayName}",
+
+                sourceBuildingId =
+                    source.InstanceId,
+
+                targetBuildingId =
+                    target.InstanceId,
+
+                resource = null,
+                amountPerTransfer = 1,
+                enabled = true
+            };
 
         List<TransportRouteDefinition> routeList =
             routes != null
-                ? new List<TransportRouteDefinition>(routes)
+                ? new List<TransportRouteDefinition>(
+                    routes
+                )
                 : new List<TransportRouteDefinition>();
 
         routeList.Add(route);
@@ -43,11 +99,72 @@ public sealed partial class TransportSystem
 
         nextRouteIndex++;
         useDefinedRoutes = true;
+
         MarkRoutesChanged();
+        RouteCreated?.Invoke(route);
 
         Debug.Log(
-            $"Route Created: {route.displayName}, Resource=Not selected"
+            $"Route Created: {route.displayName}, " +
+            "Resource=Not selected"
         );
+
+        return true;
+    }
+
+    public bool HasOutgoingRoute(
+    string buildingId
+)
+    {
+        if (
+            string.IsNullOrWhiteSpace(buildingId) ||
+            routes == null
+        )
+        {
+            return false;
+        }
+
+        foreach (
+            TransportRouteDefinition route in routes
+        )
+        {
+            if (
+                route != null &&
+                route.sourceBuildingId == buildingId
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool HasIncomingRoute(
+        string buildingId
+    )
+    {
+        if (
+            string.IsNullOrWhiteSpace(buildingId) ||
+            routes == null
+        )
+        {
+            return false;
+        }
+
+        foreach (
+            TransportRouteDefinition route in routes
+        )
+        {
+            if (
+                route != null &&
+                route.targetBuildingId == buildingId
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     public void ClearRoutes()
     {
