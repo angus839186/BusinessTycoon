@@ -5,79 +5,55 @@ public sealed class MainMenuController : MonoBehaviour
 {
     [SerializeField] private LoadingController loadingController;
     [SerializeField] private Button continueButton;
-
     [SerializeField] private SaveSlotPanel saveSlotPanel;
+
+    private bool initialized;
+
+    private bool HasRequiredReferences =>
+        loadingController != null && continueButton != null && saveSlotPanel != null;
+
     private void Awake()
     {
-        if (loadingController == null)
+        if (!HasRequiredReferences)
         {
-            loadingController =
-                FindFirstObjectByType<LoadingController>();
-        }
-    }
-    private void OnEnable()
-    {
-        if (saveSlotPanel != null)
-        {
-            saveSlotPanel.SlotsChanged +=
-                RefreshContinueButton;
+            Debug.LogError("MainMenuController 缺少必要參考。", this);
+            enabled = false;
+            return;
         }
 
+        initialized = true;
+    }
+
+    private void OnEnable()
+    {
+        if (!initialized)
+            return;
+
+        saveSlotPanel.SlotsChanged += RefreshContinueButton;
         RefreshContinueButton();
     }
 
     private void OnDisable()
     {
-        if (saveSlotPanel != null)
-        {
-            saveSlotPanel.SlotsChanged -=
-                RefreshContinueButton;
-        }
+        if (!initialized)
+            return;
+
+        saveSlotPanel.SlotsChanged -= RefreshContinueButton;
     }
 
     private void RefreshContinueButton()
     {
-        if (continueButton == null)
-        {
-            return;
-        }
-
-        continueButton.interactable =
-            SaveSlots.HasLoadableSave();
+        continueButton.interactable = SaveSlots.HasLoadableSave();
     }
 
     public void StartNewGame()
     {
-        if (loadingController == null)
-        {
-            Debug.LogError(
-                "MainMenuController 找不到 LoadingController。",
-                this
-            );
-
-            return;
-        }
-
         GameLaunchRequest.RequestNewGame();
-
-        loadingController.LoadScene(
-            SceneNames.Main,
-            "建立新遊戲..."
-        );
+        loadingController.LoadScene(SceneNames.Main, "建立新遊戲...");
     }
 
     public void ContinueGame()
     {
-        if (saveSlotPanel == null)
-        {
-            Debug.LogError(
-                "MainMenu 尚未設定 SaveSlotPanel。",
-                this
-            );
-
-            return;
-        }
-
         saveSlotPanel.OpenLoad();
     }
 

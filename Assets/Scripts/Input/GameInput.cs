@@ -6,12 +6,9 @@ using UnityEngine.EventSystems;
 
 public sealed class GameInput : MonoBehaviour
 {
-    [SerializeField]
-    private InputActionAsset actions;
-
+    [SerializeField] private InputActionAsset actions;
     private InputActionMap mapActions;
     private InputActionMap globalActions;
-
     private InputAction point;
     private InputAction primaryClick;
     private InputAction secondaryClick;
@@ -22,34 +19,21 @@ public sealed class GameInput : MonoBehaviour
     private InputAction speedUp;
     private InputAction speedDown;
     private InputAction toggleMenu;
-
     private bool initialized;
+    private readonly List<RaycastResult> uiRaycastResults = new List<RaycastResult>();
 
+    public bool IsSecondaryHeld => secondaryClick?.IsPressed() ?? false;
+    public Vector2 PointerPosition => point?.ReadValue<Vector2>() ?? Vector2.zero;
+    public Vector2 ZoomDelta => zoom?.ReadValue<Vector2>() ?? Vector2.zero;
+    public Vector2 PanDelta => pan?.ReadValue<Vector2>() ?? Vector2.zero;
+    public bool IsPanHeld => panHold?.IsPressed() ?? false;
+    public bool IsMapEnabled => mapActions?.enabled ?? false;
     public event Action PrimaryPressed;
     public event Action SecondaryPressed;
     public event Action CancelPressed;
     public event Action SpeedUpPressed;
     public event Action SpeedDownPressed;
     public event Action MenuTogglePressed;
-
-    private readonly List<RaycastResult> uiRaycastResults = new List<RaycastResult>();
-
-    public bool IsSecondaryHeld =>
-    secondaryClick != null &&
-    secondaryClick.IsPressed();
-
-    public Vector2 PointerPosition =>
-        point != null ? point.ReadValue<Vector2>() : Vector2.zero;
-
-    public Vector2 ZoomDelta =>
-        zoom != null ? zoom.ReadValue<Vector2>() : Vector2.zero;
-
-    public Vector2 PanDelta =>
-        pan != null ? pan.ReadValue<Vector2>() : Vector2.zero;
-
-    public bool IsPanHeld => panHold != null && panHold.IsPressed();
-
-    public bool IsMapEnabled => mapActions != null && mapActions.enabled;
 
     private void Awake()
     {
@@ -58,13 +42,11 @@ public sealed class GameInput : MonoBehaviour
 
     private void OnEnable()
     {
-        if (!initialized) Initialize();
-
-        if (!initialized) return;
+        if (!initialized)
+            return;
 
         primaryClick.performed += HandlePrimary;
         secondaryClick.performed += HandleSecondary;
-
         cancel.performed += HandleCancel;
         speedUp.performed += HandleSpeedUp;
         speedDown.performed += HandleSpeedDown;
@@ -92,10 +74,13 @@ public sealed class GameInput : MonoBehaviour
 
     public void SetMapEnabled(bool enabled)
     {
-        if (mapActions == null) return;
+        if (!initialized)
+            return;
 
-        if (enabled) mapActions.Enable();
-        else mapActions.Disable();
+        if (enabled)
+            mapActions.Enable();
+        else
+            mapActions.Disable();
     }
 
     private void Initialize()
@@ -103,6 +88,7 @@ public sealed class GameInput : MonoBehaviour
         if (actions == null)
         {
             Debug.LogError("GameInput 尚未設定 Input Action Asset。", this);
+            enabled = false;
             return;
         }
 
@@ -125,46 +111,23 @@ public sealed class GameInput : MonoBehaviour
         initialized = true;
     }
 
-    private void HandlePrimary(InputAction.CallbackContext context)
-    {
-        PrimaryPressed?.Invoke();
-    }
-
-    private void HandleSecondary(InputAction.CallbackContext context)
-    {
-        SecondaryPressed?.Invoke();
-    }
-
-    private void HandleCancel(InputAction.CallbackContext context)
-    {
-        CancelPressed?.Invoke();
-    }
-
-    private void HandleSpeedUp(InputAction.CallbackContext context)
-    {
-        SpeedUpPressed?.Invoke();
-    }
-
-    private void HandleSpeedDown(InputAction.CallbackContext context)
-    {
-        SpeedDownPressed?.Invoke();
-    }
-    private void HandleMenuToggle(InputAction.CallbackContext context)
-    {
-        MenuTogglePressed?.Invoke();
-    }
+    private void HandlePrimary(InputAction.CallbackContext context) => PrimaryPressed?.Invoke();
+    private void HandleSecondary(InputAction.CallbackContext context) => SecondaryPressed?.Invoke();
+    private void HandleCancel(InputAction.CallbackContext context) => CancelPressed?.Invoke();
+    private void HandleSpeedUp(InputAction.CallbackContext context) => SpeedUpPressed?.Invoke();
+    private void HandleSpeedDown(InputAction.CallbackContext context) => SpeedDownPressed?.Invoke();
+    private void HandleMenuToggle(InputAction.CallbackContext context) => MenuTogglePressed?.Invoke();
     public bool IsPointerOverUI()
     {
-        if (EventSystem.current == null) return false;
+        EventSystem eventSystem = EventSystem.current;
 
-        PointerEventData pointerData = new PointerEventData(EventSystem.current)
-        {
-            position = PointerPosition
-        };
+        if (eventSystem == null)
+            return false;
+
+        PointerEventData pointerData = new PointerEventData(eventSystem) { position = PointerPosition };
 
         uiRaycastResults.Clear();
-
-        EventSystem.current.RaycastAll(pointerData, uiRaycastResults);
+        eventSystem.RaycastAll(pointerData, uiRaycastResults);
 
         return uiRaycastResults.Count > 0;
     }

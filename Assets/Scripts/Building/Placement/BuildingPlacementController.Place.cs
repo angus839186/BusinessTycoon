@@ -14,22 +14,11 @@ public sealed partial class BuildingPlacementController
 
         ResourceAmount[] paidConstructionCosts = selectedBuilding.constructionCosts;
 
-        if (productionSystem != null && !productionSystem.TryPayConstructionCost(
-                selectedBuilding,
-                worldPosition,
-                longitude,
-                latitude,
-                out paidConstructionCosts
-            )
-        )
+        if (!productionSystem.TryPayConstructionCost(selectedBuilding, worldPosition, longitude, latitude, out paidConstructionCosts))
         {
-            string message =
-            $"Cannot Build: not enough resources for " +
-            $"{selectedBuilding.displayName}";
-
+            string message = $"Cannot Build: not enough resources for {selectedBuilding.displayName}";
             Debug.Log(message);
             PlacementFailed?.Invoke(message);
-
             return;
         }
 
@@ -52,7 +41,7 @@ public sealed partial class BuildingPlacementController
         Debug.Log(
             $"Building Placed: Building={selectedBuilding.displayName}, " +
             $"Lon={longitude:F6}, Lat={latitude:F6}, " +
-            $"Total={productionSystem?.Buildings.Count ?? 0}"
+            $"Total={productionSystem.Buildings.Count}"
         );
     }
 
@@ -86,8 +75,7 @@ public sealed partial class BuildingPlacementController
         instance.SetLocation(worldPosition, longitude, latitude);
         instance.SetConstructionCostSnapshot(constructionCosts);
 
-        if (productionSystem != null)
-            productionSystem.Register(instance);
+        productionSystem.Register(instance);
 
         CreateProgressBar(buildingObject.transform, instance);
 

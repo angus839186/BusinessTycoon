@@ -269,6 +269,7 @@ GameObject:
   - component: {fileID: 2304672560227240992}
   - component: {fileID: 2364350382136487530}
   - component: {fileID: 4897659887383199710}
+  - component: {fileID: 469545964359421180}
   m_Layer: 0
   m_Name: AudioSystem
   m_TagString: Untagged
@@ -322,3 +323,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicPlayer
   audioSystem: {fileID: 2364350382136487530}
+--- !u!114 &469545964359421180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8887880669033731849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83dbc8a34d2d6b9469acfd79d6de0846, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UiButtonSound
+  pointAction: {fileID: -1654692200621890270, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}

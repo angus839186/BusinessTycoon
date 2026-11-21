@@ -33,6 +33,12 @@ public sealed class AudioSystem : MonoBehaviour
     public AudioSource MusicSource => musicSource;
     public event Action SettingsChanged;
 
+    private bool HasRequiredReferences =>
+    mixer != null &&
+    musicSource != null &&
+    sfxSource != null &&
+    sfxLibrary != null;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -40,28 +46,16 @@ public sealed class AudioSystem : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
-
         DontDestroyOnLoad(gameObject);
-
         Settings = SoundSettingsStore.Load();
-
         ApplyVolumes();
-
-        if (mixer == null)
+        if (!HasRequiredReferences)
         {
-            Debug.LogError("AudioSystem 尚未設定 AudioMixer。", this);
-        }
-
-        if (musicSource == null)
-        {
-            Debug.LogError("AudioSystem 尚未設定 Music AudioSource。", this);
-        }
-
-        if (sfxSource == null)
-        {
-            Debug.LogError("AudioSystem 尚未設定 SFX AudioSource。", this);
+            Debug.LogError(
+                "AudioSystem 缺少 AudioMixer、AudioSource 或 SfxLibrary 參考。",
+                this
+            );
         }
     }
 

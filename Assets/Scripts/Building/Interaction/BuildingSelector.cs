@@ -8,49 +8,54 @@ public sealed class BuildingSelector : MonoBehaviour
     [SerializeField] private BuildingInstance selectedBuilding;
     [SerializeField] private GameInput gameInput;
 
+    private bool initialized;
+
     public BuildingInstance SelectedBuilding => selectedBuilding;
     public event Action<BuildingInstance> SelectionChanged;
 
+    private bool HasRequiredReferences =>
+        mapMode != null && panelController != null && gameInput != null;
+
     private void Awake()
     {
-        if (mapMode == null)
-            mapMode = FindFirstObjectByType<MapModeController>();
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("BuildingSelector 缺少必要參考。", this);
+            enabled = false;
+            return;
+        }
 
-        if (panelController == null)
-            panelController = FindFirstObjectByType<PanelController>();
-
-        if (gameInput == null)
-            gameInput = FindFirstObjectByType<GameInput>();
+        initialized = true;
     }
 
     private void OnEnable()
     {
-        if (gameInput != null)
-        {
-            gameInput.PrimaryPressed += HandlePrimaryPressed;
-        }
+        if (!initialized)
+            return;
+
+        gameInput.PrimaryPressed += HandlePrimaryPressed;
     }
 
     private void OnDisable()
     {
-        if (gameInput != null)
-        {
-            gameInput.PrimaryPressed -= HandlePrimaryPressed;
-        }
+        if (!initialized)
+            return;
+
+        gameInput.PrimaryPressed -= HandlePrimaryPressed;
     }
 
     private void HandlePrimaryPressed()
     {
-        if (gameInput != null && gameInput.IsPointerOverUI()) return;
-        if (panelController != null && panelController.HasOpenPanel) return;
-        if (mapMode != null && mapMode.HasActiveMode) return;
+        if (gameInput.IsPointerOverUI() || panelController.HasOpenPanel || mapMode.HasActiveMode)
+            return;
 
         SelectBuilding(RaycastBuilding());
     }
 
     public void SelectBuilding(BuildingInstance building)
     {
-        if (selectedBuilding == building) return;
+        if (selectedBuilding == building)
+            return;
 
         selectedBuilding = building;
         SelectionChanged?.Invoke(selectedBuilding);
@@ -64,10 +69,15 @@ public sealed class BuildingSelector : MonoBehaviour
     private BuildingInstance RaycastBuilding()
     {
         Camera camera = Camera.main;
-        if (camera == null) return null;
+
+        if (camera == null)
+            return null;
+
         Ray ray = camera.ScreenPointToRay(gameInput.PointerPosition);
 
-        if (!Physics.Raycast(ray, out RaycastHit hit)) return null;
+        if (!Physics.Raycast(ray, out RaycastHit hit))
+            return null;
+
         return hit.collider.GetComponentInParent<BuildingInstance>();
     }
 }

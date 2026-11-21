@@ -5,22 +5,31 @@ using UnityEngine.UI;
 
 public sealed class ConfirmDialog : MonoBehaviour
 {
+    [Header("Input")]
+    [SerializeField] private GameInput gameInput;
     [Header("UI")]
-    [SerializeField] private GameObject windowRoot;
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
     [SerializeField] private Button closeButton;
+    [SerializeField] private UiTransition transition;
 
-    [Header("Input")]
-    [SerializeField] private GameInput gameInput;
 
     private Action confirmAction;
     private Action cancelAction;
     private bool restoreMapInput;
 
-    public bool IsOpen => windowRoot != null && windowRoot.activeSelf;
+    public bool IsOpen => transition != null && transition.IsVisible;
+
+    private bool HasRequiredReferences =>
+    titleText != null &&
+    messageText != null &&
+    confirmButton != null &&
+    cancelButton != null &&
+    closeButton != null &&
+    gameInput != null &&
+    transition != null;
 
     private void Awake()
     {
@@ -29,25 +38,18 @@ public sealed class ConfirmDialog : MonoBehaviour
             gameInput = FindFirstObjectByType<GameInput>();
         }
 
-        if (confirmButton != null)
+        if (!HasRequiredReferences)
         {
-            confirmButton.onClick.AddListener(HandleConfirm);
+            Debug.LogError("ConfirmDialog 缺少必要的 UI 或系統參考。", this);
+            enabled = false;
+            return;
         }
 
-        if (cancelButton != null)
-        {
-            cancelButton.onClick.AddListener(HandleCancel);
-        }
+        confirmButton.onClick.AddListener(HandleConfirm);
+        cancelButton.onClick.AddListener(HandleCancel);
+        closeButton.onClick.AddListener(HandleCancel);
 
-        if (closeButton != null)
-        {
-            closeButton.onClick.AddListener(HandleCancel);
-        }
-
-        if (windowRoot != null)
-        {
-            windowRoot.SetActive(false);
-        }
+        transition.Hide(true);
     }
 
     private void OnDestroy()
@@ -68,60 +70,27 @@ public sealed class ConfirmDialog : MonoBehaviour
         }
     }
 
-    public void Show(
-        string title,
-        string message,
-        Action onConfirm,
-        Action onCancel = null
-    )
+    public void Show(string title, string message, Action onConfirm, Action onCancel = null)
     {
-        if (windowRoot == null)
-        {
-            Debug.LogError(
-                "ConfirmDialog 尚未設定 Window Root。",
-                this
-            );
-
-            return;
-        }
-
         if (!IsOpen)
         {
-            restoreMapInput = gameInput != null && gameInput.IsMapEnabled;
+            restoreMapInput = gameInput.IsMapEnabled;
         }
 
         confirmAction = onConfirm;
         cancelAction = onCancel;
 
-        if (titleText != null)
-        {
-            titleText.text = title;
-        }
+        titleText.text = title;
+        messageText.text = message;
 
-        if (messageText != null)
-        {
-            messageText.text = message;
-        }
-
-        if (gameInput != null)
-        {
-            gameInput.SetMapEnabled(false);
-        }
-
-        windowRoot.SetActive(true);
+        gameInput.SetMapEnabled(false);
+        transition.Show();
     }
 
     public void Hide()
     {
-        if (windowRoot != null)
-        {
-            windowRoot.SetActive(false);
-        }
-
-        if (gameInput != null)
-        {
-            gameInput.SetMapEnabled(restoreMapInput);
-        }
+        transition.Hide();
+        gameInput.SetMapEnabled(restoreMapInput);
 
         confirmAction = null;
         cancelAction = null;

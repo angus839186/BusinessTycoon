@@ -1189,7 +1189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf036f6ec937a414ab6b282128cbc804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
-  loadingController: {fileID: 0}
+  loadingController: {fileID: 8967296847646419021}
   continueButton: {fileID: 1917622831}
   saveSlotPanel: {fileID: 3675218}
 --- !u!4 &932829005
@@ -2253,6 +2253,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b97dad26a8c756341992158483376e09, type: 3}
+--- !u!114 &8967296847646419021 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8609034067325822114, guid: b97dad26a8c756341992158483376e09, type: 3}
+  m_PrefabInstance: {fileID: 8967296847646419020}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d7bd7054ff1ee74f9e0be6af8ab34b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoadingController
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

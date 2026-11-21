@@ -319,7 +319,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProductionSystem
   marketSystem: {fileID: 0}
-  gameRules: {fileID: 0}
+  gameRules: {fileID: 949014116}
   startingResources:
   - resource: {fileID: 11400000, guid: 01db9712564d5364983ddccef207a7f6, type: 2}
     amount: 10000
@@ -327,7 +327,7 @@ MonoBehaviour:
   maxIncomeRecords: 20
   moneyResource: {fileID: 11400000, guid: 01db9712564d5364983ddccef207a7f6, type: 2}
   gameClock: {fileID: 1777925414}
-  locationEconomyEvaluator: {fileID: 0}
+  locationEconomyEvaluator: {fileID: 324973233}
   maxExpenseRecords: 50
 --- !u!4 &36237152
 Transform:
@@ -2844,6 +2844,7 @@ GameObject:
   m_Component:
   - component: {fileID: 593045040}
   - component: {fileID: 593045041}
+  - component: {fileID: 593045042}
   m_Layer: 5
   m_Name: PanelManager
   m_TagString: Untagged
@@ -2900,9 +2901,23 @@ MonoBehaviour:
   - {fileID: 751792849557146634, guid: cd3877ea79b0a7448b7848c1b5ebbc14, type: 3}
   openFirstPanelOnStart: 0
   gameInput: {fileID: 0}
-  menuCanvasGroup: {fileID: 1107235530}
-  menuTweenDuration: 0.2
-  menuHiddenOffset: {x: -180, y: 0}
+  menuTransition: {fileID: 593045042}
+--- !u!114 &593045042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593045039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d617fc31ed7cc44584f75b110b6eb09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UiTransition
+  root: {fileID: 1107235528}
+  canvasGroup: {fileID: 1107235530}
+  duration: 0.2
+  hiddenOffset: {x: -180, y: 0}
 --- !u!1001 &636223695
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3088,7 +3103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 479b798b7d1fb11409e4e8bf65b4ea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameClockPanel
-  gameInput: {fileID: 0}
+  gameInput: {fileID: 254006531}
   gameClock: {fileID: 1777925414}
   outputText: {fileID: 1750221587}
   speedText: {fileID: 341567388}
@@ -4238,12 +4253,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc5ed0f59b5c4b74f8a2b7c2b0b340cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapModeController
-  gameInput: {fileID: 0}
-  panelManager: {fileID: 0}
-  placement: {fileID: 0}
-  demolition: {fileID: 0}
-  buildingSelector: {fileID: 0}
-  routeBuilder: {fileID: 0}
+  gameInput: {fileID: 254006531}
+  panelManager: {fileID: 593045041}
+  placement: {fileID: 1594526091}
+  demolition: {fileID: 2022622842}
+  buildingSelector: {fileID: 1470055399}
+  routeBuilder: {fileID: 531234115}
 --- !u!114 &1470055399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4256,10 +4271,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc1aac8c3be1eb649948603c862eea41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingSelector
-  mapMode: {fileID: 0}
-  panelController: {fileID: 0}
+  mapMode: {fileID: 1470055398}
+  panelController: {fileID: 593045041}
   selectedBuilding: {fileID: 0}
-  gameInput: {fileID: 0}
+  gameInput: {fileID: 254006531}
 --- !u!1 &1499893624
 GameObject:
   m_ObjectHideFlags: 0
@@ -4913,7 +4928,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingPlacementController
   productionSystem: {fileID: 36237151}
   selectedBuilding: {fileID: 0}
-  demolitionController: {fileID: 0}
+  demolitionController: {fileID: 2022622842}
 --- !u!4 &1594526092
 Transform:
   m_ObjectHideFlags: 0
@@ -6162,10 +6177,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35acd079d68a8834c96e3f88f4f5b441, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingDemolitionController
-  gameInput: {fileID: 0}
+  gameInput: {fileID: 254006531}
   productionSystem: {fileID: 36237151}
-  transport: {fileID: 0}
-  buildingSelector: {fileID: 0}
+  transport: {fileID: 398091279}
+  buildingSelector: {fileID: 1470055399}
   gameRules: {fileID: 949014116}
   buildingPlacement: {fileID: 1594526091}
   statusText: {fileID: 565766493}

@@ -13,99 +13,68 @@ public sealed class EconomyHud : MonoBehaviour
     [SerializeField] private TextMeshProUGUI routeCountText;
     [SerializeField] private TextMeshProUGUI totalAssetText;
 
+    private bool initialized;
+
+    private bool HasRequiredReferences =>
+        productionSystem != null && transportSystem != null &&
+        incomeText != null && expenseText != null && buildingCountText != null &&
+        routeCountText != null && totalAssetText != null;
+
     private void Awake()
     {
         if (marketSystem == null)
-        {
-            marketSystem =
-                FindFirstObjectByType<MarketSystem>();
-        }
-        if (productionSystem == null)
-            productionSystem = FindFirstObjectByType<ProductionSystem>();
+            marketSystem = FindFirstObjectByType<MarketSystem>();
 
-        if (transportSystem == null)
-            transportSystem = FindFirstObjectByType<TransportSystem>();
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("EconomyHud 缺少必要參考。", this);
+            enabled = false;
+            return;
+        }
+
+        initialized = true;
     }
 
     private void OnEnable()
     {
-        if (marketSystem != null)
-        {
-            marketSystem.PricesChanged += Refresh;
-        }
-        if (productionSystem != null)
-            productionSystem.DataChanged += Refresh;
+        if (!initialized)
+            return;
 
-        if (transportSystem != null)
-            transportSystem.RoutesChanged += Refresh;
+        productionSystem.DataChanged += Refresh;
+        transportSystem.RoutesChanged += Refresh;
+
+        if (marketSystem != null)
+            marketSystem.PricesChanged += Refresh;
 
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (marketSystem != null)
-        {
-            marketSystem.PricesChanged -= Refresh;
-        }
-        if (productionSystem != null)
-            productionSystem.DataChanged -= Refresh;
+        if (!initialized)
+            return;
 
-        if (transportSystem != null)
-            transportSystem.RoutesChanged -= Refresh;
+        productionSystem.DataChanged -= Refresh;
+        transportSystem.RoutesChanged -= Refresh;
+
+        if (marketSystem != null)
+            marketSystem.PricesChanged -= Refresh;
     }
 
     private void Refresh()
     {
         MonthlyFinanceRecord currentMonth = GetCurrentMonth();
 
-        SetText(incomeText, currentMonth?.income ?? 0);
-        SetText(expenseText, currentMonth?.expense ?? 0);
-
-        SetText(
-            buildingCountText,
-            productionSystem != null
-                ? productionSystem.Buildings.Count
-                : 0
-        );
-
-        SetText(
-            routeCountText,
-            transportSystem != null
-                ? transportSystem.Routes.Count
-                : 0
-        );
-
-        if (totalAssetText != null)
-        {
-            totalAssetText.text =
-                AssetValueCalculator.CalculateTotalAssetValue(productionSystem, marketSystem)
-                .ToString("N0");
-        }
+        incomeText.text = (currentMonth?.income ?? 0).ToString("N0");
+        expenseText.text = (currentMonth?.expense ?? 0).ToString("N0");
+        buildingCountText.text = productionSystem.Buildings.Count.ToString("N0");
+        routeCountText.text = transportSystem.Routes.Count.ToString("N0");
+        totalAssetText.text = AssetValueCalculator.CalculateTotalAssetValue(productionSystem, marketSystem).ToString("N0");
     }
 
     private MonthlyFinanceRecord GetCurrentMonth()
     {
-        if (
-            productionSystem == null ||
-            productionSystem.MonthlyFinanceRecords.Count == 0
-        )
-        {
-            return null;
-        }
-
-        int lastIndex =
-            productionSystem.MonthlyFinanceRecords.Count - 1;
-
-        return productionSystem.MonthlyFinanceRecords[lastIndex];
-    }
-
-    private static void SetText(
-        TextMeshProUGUI target,
-        int value
-    )
-    {
-        if (target != null)
-            target.text = value.ToString("N0");
+        int count = productionSystem.MonthlyFinanceRecords.Count;
+        return count > 0 ? productionSystem.MonthlyFinanceRecords[count - 1] : null;
     }
 }

@@ -21,10 +21,18 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
 
     private void Awake()
     {
-        if (demolitionController == null)
-            demolitionController = FindFirstObjectByType<BuildingDemolitionController>();
         if (productionSystem == null)
-            productionSystem = FindFirstObjectByType<ProductionSystem>();
+        {
+            Debug.LogError($"{nameof(BuildingPlacementController)} requires {nameof(ProductionSystem)}.", this);
+            enabled = false;
+            return;
+        }
+
+        if (demolitionController == null)
+        {
+            Debug.LogError($"{nameof(BuildingPlacementController)} requires {nameof(BuildingDemolitionController)}.", this);
+            enabled = false;
+        }
     }
 
 

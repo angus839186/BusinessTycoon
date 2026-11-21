@@ -5,7 +5,7 @@ public sealed partial class BuildingPlacementController
     public void PrepareForLoad(int nextInstanceIndex)
     {
         nextBuildingInstanceIndex = Mathf.Max(1, nextInstanceIndex);
-        isPlacementMode = false;
+        ExitPlacementMode();
     }
 
     public BuildingInstance RestoreBuilding(

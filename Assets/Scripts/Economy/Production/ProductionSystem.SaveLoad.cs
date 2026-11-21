@@ -39,8 +39,7 @@ public sealed partial class ProductionSystem
 
         incomeRecords.Add(record);
 
-        while (incomeRecords.Count > maxIncomeRecords)
-            incomeRecords.RemoveAt(incomeRecords.Count - 1);
+        TrimRecords(incomeRecords, maxIncomeRecords);
     }
 
     public void RestoreExpenseRecord(ExpenseRecord record)
@@ -50,8 +49,7 @@ public sealed partial class ProductionSystem
 
         expenseRecords.Add(record);
 
-        while (expenseRecords.Count > maxExpenseRecords)
-            expenseRecords.RemoveAt(expenseRecords.Count - 1);
+        TrimRecords(expenseRecords, maxExpenseRecords);
     }
     public void RestoreMonthlyFinanceRecord(
     int month,

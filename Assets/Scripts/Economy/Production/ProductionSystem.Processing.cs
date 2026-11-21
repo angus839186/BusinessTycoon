@@ -2,7 +2,7 @@ using UnityEngine;
 
 public sealed partial class ProductionSystem
 {
-    private void TickBuilding(BuildingInstance building, float deltaSeconds)
+    private void TickBuilding(BuildingInstance building)
     {
         BuildingDefinition definition = building.Definition;
 
@@ -27,18 +27,9 @@ public sealed partial class ProductionSystem
             return;
         if (!HasEnoughInput(building, definition))
         {
-            if (gameClock != null)
-            {
-                building.SetLastProcessGameMinutes(
-                    gameClock.TotalGameMinutes
-                );
-            }
-
+            building.SetLastProcessGameMinutes(gameClock.TotalGameMinutes);
             return;
         }
-
-        if (gameClock == null)
-            return;
 
         double processIntervalMinutes = GetProcessIntervalMinutes(building);
 
@@ -195,8 +186,7 @@ public sealed partial class ProductionSystem
 
         if (definition.category == BuildingCategory.Resource)
         {
-            if (gameRules != null)
-                speed *= gameRules.ResourceProductionSpeedMultiplier;
+            speed *= gameRules.ResourceProductionSpeedMultiplier;
 
             LocationValueModifiers modifiers = GetLocationModifiers(building);
             speed *= modifiers.resourceProductionSpeedMultiplier;
@@ -207,7 +197,7 @@ public sealed partial class ProductionSystem
 
     public float GetProcessProgress(BuildingInstance building)
     {
-        if (gameClock == null || building == null || building.Definition == null)
+        if (building == null || building.Definition == null)
             return 0f;
 
         if (IsWaitingForInput(building))

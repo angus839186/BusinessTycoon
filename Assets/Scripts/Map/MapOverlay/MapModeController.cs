@@ -17,79 +17,68 @@ public sealed class MapModeController : MonoBehaviour
     [SerializeField] private BuildingSelector buildingSelector;
     [SerializeField] private TransportRouteBuilder routeBuilder;
 
+    private bool initialized;
+
     public MapMode CurrentMode
     {
         get
         {
-            if (placement != null && placement.IsPlacementMode)
+            if (placement.IsPlacementMode)
                 return MapMode.Placement;
 
-            if (demolition != null && demolition.IsDemolitionMode)
+            if (demolition.IsDemolitionMode)
                 return MapMode.Demolition;
 
-            if (routeBuilder != null && routeBuilder.IsCreatingRoute)
+            if (routeBuilder.IsCreatingRoute)
                 return MapMode.Route;
 
             return MapMode.None;
         }
     }
 
-    public bool HasActiveMode =>
-        CurrentMode != MapMode.None;
+    public bool HasActiveMode => CurrentMode != MapMode.None;
+
+    private bool HasRequiredReferences =>
+        gameInput != null && panelManager != null && placement != null &&
+        demolition != null && buildingSelector != null && routeBuilder != null;
 
     private void Awake()
     {
-        if (gameInput == null)
-            gameInput = FindFirstObjectByType<GameInput>();
-        if (panelManager == null)
-            panelManager = FindFirstObjectByType<PanelController>();
-        if (placement == null)
-            placement = FindFirstObjectByType<BuildingPlacementController>();
-        if (demolition == null)
-            demolition = FindFirstObjectByType<BuildingDemolitionController>();
-        if (routeBuilder == null)
-            routeBuilder = FindFirstObjectByType<TransportRouteBuilder>();
-        if (buildingSelector == null)
-            buildingSelector = FindFirstObjectByType<BuildingSelector>();
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("MapModeController 缺少必要參考。", this);
+            enabled = false;
+            return;
+        }
+
+        initialized = true;
     }
 
     private void OnEnable()
     {
-        if (panelManager != null)
-        {
-            panelManager.PanelStateChanged += HandlePanelStateChanged;
-        }
+        if (!initialized)
+            return;
 
-        if (gameInput != null)
-        {
-            gameInput.CancelPressed += HandleCancelInput;
-
-            gameInput.SecondaryPressed += HandleCancelInput;
-        }
+        panelManager.PanelStateChanged += HandlePanelStateChanged;
+        gameInput.CancelPressed += HandleCancelInput;
+        gameInput.SecondaryPressed += HandleCancelInput;
     }
 
     private void OnDisable()
     {
-        if (panelManager != null)
-        {
-            panelManager.PanelStateChanged -= HandlePanelStateChanged;
-        }
-        if (gameInput != null)
-        {
-            gameInput.CancelPressed -= HandleCancelInput;
-            gameInput.SecondaryPressed -= HandleCancelInput;
-        }
+        if (!initialized)
+            return;
+
+        panelManager.PanelStateChanged -= HandlePanelStateChanged;
+        gameInput.CancelPressed -= HandleCancelInput;
+        gameInput.SecondaryPressed -= HandleCancelInput;
     }
 
     public void StartPlacementMode()
     {
         CancelMapMode();
         ClearBuildingSelection();
-
-        if (placement != null)
-        {
-            placement.EnterPlacementMode();
-        }
+        placement.EnterPlacementMode();
     }
 
     public void ToggleDemolitionMode()
@@ -102,28 +91,32 @@ public sealed class MapModeController : MonoBehaviour
 
         CancelMapMode();
         ClearBuildingSelection();
-
-        if (demolition != null)
-        {
-            demolition.EnterDemolitionMode();
-        }
+        demolition.EnterDemolitionMode();
     }
 
     public void StartRouteMode()
     {
         CancelMapMode();
         ClearBuildingSelection();
+        routeBuilder.StartCreateRoute();
+    }
 
-        if (routeBuilder != null)
-        {
-            routeBuilder.StartCreateRoute();
-        }
+    public void CancelMapMode()
+    {
+        if (placement.IsPlacementMode)
+            placement.ExitPlacementMode();
+
+        if (demolition.IsDemolitionMode)
+            demolition.ExitDemolitionMode();
+
+        if (routeBuilder.IsCreatingRoute)
+            routeBuilder.CancelCreateRoute();
     }
 
     private void HandleCancelInput()
     {
-        if (!HasActiveMode) return;
-        CancelMapMode();
+        if (HasActiveMode)
+            CancelMapMode();
     }
 
     private void HandlePanelStateChanged(bool isOpen)
@@ -132,23 +125,8 @@ public sealed class MapModeController : MonoBehaviour
             CancelMapMode();
     }
 
-    public void CancelMapMode()
-    {
-        if (placement != null && placement.IsPlacementMode)
-            placement.ExitPlacementMode();
-
-        if (demolition != null && demolition.IsDemolitionMode)
-            demolition.ExitDemolitionMode();
-
-        if (routeBuilder != null && routeBuilder.IsCreatingRoute)
-            routeBuilder.CancelCreateRoute();
-    }
-
     private void ClearBuildingSelection()
     {
-        if (buildingSelector != null)
-        {
-            buildingSelector.ClearSelection();
-        }
+        buildingSelector.ClearSelection();
     }
 }

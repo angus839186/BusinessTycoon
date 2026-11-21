@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7838310168870447081}
   - component: {fileID: 6383914455707444466}
   - component: {fileID: 1644195063932457519}
+  - component: {fileID: 6227319736187908454}
   m_Layer: 5
   m_Name: WindowRoot
   m_TagString: Untagged
@@ -76,6 +77,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &6227319736187908454
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505295921382196117}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2190588166292812958
 GameObject:
   m_ObjectHideFlags: 0
@@ -470,6 +483,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7785877264531347651}
   - component: {fileID: 7949929319872383080}
+  - component: {fileID: 7704546229202096350}
   m_Layer: 5
   m_Name: ConfirmDialog
   m_TagString: Untagged
@@ -509,13 +523,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 377810c3e67dce540b88bd9a187dba34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConfirmDialog
-  windowRoot: {fileID: 505295921382196117}
+  gameInput: {fileID: 0}
   titleText: {fileID: 8010108526546583244}
   messageText: {fileID: 7864824592058927085}
   confirmButton: {fileID: 3882482835377973271}
   cancelButton: {fileID: 5710066181538322670}
   closeButton: {fileID: 5495440121557265376}
-  gameInput: {fileID: 0}
+  transition: {fileID: 7704546229202096350}
+--- !u!114 &7704546229202096350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3807359812804969080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d617fc31ed7cc44584f75b110b6eb09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UiTransition
+  root: {fileID: 7838310168870447081}
+  canvasGroup: {fileID: 6227319736187908454}
+  duration: 0.15
+  hiddenOffset: {x: 0, y: 0}
 --- !u!1 &4372732935268019121
 GameObject:
   m_ObjectHideFlags: 0

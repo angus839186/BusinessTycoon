@@ -8,28 +8,29 @@ using UnityEngine;
     ImportOrder = 0
 )]
 [GameDataColumnAlias("iconPath", "icon")]
-[GameDataColumnAlias("enabled", "isEnabled")]
 [CreateAssetMenu(
     fileName = "ResourceDefinition",
     menuName = "BusinessTycoon/Resource Definition"
 )]
 public sealed class ResourceDefinition : ScriptableObject
 {
+    [Header("資源ID")]
     [GameDataColumn]
     public string resourceId;
 
+    [Header("顯示名稱")]
     [GameDataColumn]
     public string displayName;
 
+    [Header("資源Icon")]
     [GameDataColumn(AllowEmpty = true)]
     public Sprite icon;
 
-    [GameDataColumn]
-    public bool isEnabled = true;
 
+    [Header("基本價格")]
     [GameDataColumn(MinValue = 0)]
     public int basePrice = 0;
 
-    [Header("Production")]
+    [Header("配方")]
     public ResourceRecipe recipe;
 }

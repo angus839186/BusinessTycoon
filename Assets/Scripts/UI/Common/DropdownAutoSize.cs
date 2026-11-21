@@ -11,6 +11,9 @@ public sealed class DropdownAutoSize : MonoBehaviour
     [SerializeField] private float height = 32f;
 
     private RectTransform rectTransform;
+    private bool initialized;
+
+    private bool HasRequiredReferences => rectTransform != null && dropdown != null && label != null;
 
     private void Awake()
     {
@@ -20,31 +23,44 @@ public sealed class DropdownAutoSize : MonoBehaviour
             dropdown = GetComponent<TMP_Dropdown>();
 
         if (label == null && dropdown != null)
-            label = (TextMeshProUGUI)dropdown.captionText;
+            label = dropdown.captionText as TextMeshProUGUI;
 
-        Resize();
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("DropdownAutoSize 缺少必要參考。", this);
+            enabled = false;
+            return;
+        }
 
-        if (dropdown != null)
-            dropdown.onValueChanged.AddListener(_ => Resize());
+        initialized = true;
     }
 
     private void OnEnable()
     {
+        if (!initialized)
+            return;
+
+        dropdown.onValueChanged.AddListener(HandleValueChanged);
         Resize();
+    }
+
+    private void OnDisable()
+    {
+        if (!initialized)
+            return;
+
+        dropdown.onValueChanged.RemoveListener(HandleValueChanged);
     }
 
     public void Resize()
     {
-        if (rectTransform == null)
-            rectTransform = GetComponent<RectTransform>();
-
-        if (label == null)
+        if (!initialized)
             return;
 
-        float preferredWidth = label.preferredWidth + padding;
-        float width = Mathf.Max(minWidth, preferredWidth);
-
+        float width = Mathf.Max(minWidth, label.preferredWidth + padding);
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
     }
+
+    private void HandleValueChanged(int _) => Resize();
 }

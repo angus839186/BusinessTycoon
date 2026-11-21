@@ -6,12 +6,7 @@ public sealed partial class ProductionSystem
 {
     private void TickMaintenance(BuildingInstance building, BuildingDefinition definition)
     {
-        if (
-            gameClock == null ||
-            definition == null ||
-            definition.maintenanceCosts == null ||
-            definition.maintenanceCosts.Length == 0
-        )
+        if (definition.maintenanceCosts == null || definition.maintenanceCosts.Length == 0)
             return;
 
         double intervalMinutes = GetMaintenanceIntervalMinutes();
@@ -25,7 +20,7 @@ public sealed partial class ProductionSystem
         if (elapsedMinutes < intervalMinutes)
             return;
 
-        float multiplier = gameRules != null ? gameRules.MaintenanceCostMultiplier : 1f;
+        float multiplier = gameRules.MaintenanceCostMultiplier;
         LocationValueModifiers modifiers = GetLocationModifiers(building);
         multiplier *= modifiers.maintenanceCostMultiplier;
         ResourceAmount[] maintenanceCosts = CalculateModifiedCosts(definition.maintenanceCosts, multiplier);
@@ -33,13 +28,7 @@ public sealed partial class ProductionSystem
         if (TryPay(maintenanceCosts, definition.displayName, "Maintenance"))
             building.SetLastMaintenanceGameMinutes(gameClock.TotalGameMinutes);
     }
-    private double GetMaintenanceIntervalMinutes()
-    {
-        if (gameRules == null || gameRules.Config == null)
-            return 0;
-
-        return gameRules.Config.buildingMaintenanceInterval.ToMinutes();
-    }
+    private double GetMaintenanceIntervalMinutes() => gameRules.MaintenanceIntervalMinutes;
 
     public bool TryPayConstructionCost(
     BuildingDefinition definition,
@@ -54,12 +43,7 @@ public sealed partial class ProductionSystem
         if (definition == null)
             return false;
 
-        float multiplier = GetConstructionCostMultiplier(
-            definition,
-            worldPosition,
-            longitude,
-            latitude
-        );
+        float multiplier = GetConstructionCostMultiplier(worldPosition, longitude, latitude);
 
         paidCosts = CalculateModifiedCosts(
             definition.constructionCosts,
@@ -142,28 +126,18 @@ public sealed partial class ProductionSystem
             expenseType,
             FormatResources(paidResources),
             expense,
-            moneyResource != null ? globalInventory.GetAmount(moneyResource) : 0,
-            gameClock != null ? gameClock.TotalGameMinutes : 0
+            globalInventory.GetAmount(moneyResource), gameClock.TotalGameMinutes
         );
 
         expenseRecords.Insert(0, record);
 
-        while (expenseRecords.Count > maxExpenseRecords)
-            expenseRecords.RemoveAt(expenseRecords.Count - 1);
+        TrimRecords(expenseRecords, maxExpenseRecords);
     }
 
-    private void SellResources(
-    BuildingInstance building,
-    BuildingDefinition definition
-)
+    private void SellResources(BuildingInstance building, BuildingDefinition definition)
     {
-        if (moneyResource == null ||
-            definition == null ||
-            definition.saleResource == null ||
-            definition.saleAmount <= 0)
-        {
+        if (definition.saleResource == null || definition.saleAmount <= 0)
             return;
-        }
 
         ResourceDefinition soldResource =
             definition.saleResource;
@@ -195,22 +169,14 @@ public sealed partial class ProductionSystem
             soldResources,
             income,
             globalInventory.GetAmount(moneyResource),
-            gameClock != null
-                ? gameClock.TotalGameMinutes
-                : 0
+            gameClock.TotalGameMinutes
         );
 
         incomeRecords.Insert(0, record);
 
-        while (incomeRecords.Count > maxIncomeRecords)
-        {
-            incomeRecords.RemoveAt(
-                incomeRecords.Count - 1
-            );
-        }
+        TrimRecords(incomeRecords, maxIncomeRecords);
 
-        GetOrCreateMonthlyFinanceRecord()
-            .AddIncome(income);
+        GetOrCreateMonthlyFinanceRecord().AddIncome(income);
 
         MarkFinanceChanged();
 
@@ -244,10 +210,7 @@ public sealed partial class ProductionSystem
         int baseIncome =
             unitPrice * amount;
 
-        float multiplier =
-            gameRules != null
-                ? gameRules.CommercialSalePriceMultiplier
-                : 1f;
+        float multiplier = gameRules.CommercialSalePriceMultiplier;
 
         LocationValueModifiers modifiers =
             GetLocationModifiers(building);
@@ -339,5 +302,13 @@ public sealed partial class ProductionSystem
         }
 
         return string.Join(", ", parts);
+    }
+
+    private static void TrimRecords<T>(List<T> records, int maxCount)
+    {
+        int limit = Math.Max(0, maxCount);
+
+        if (records.Count > limit)
+            records.RemoveRange(limit, records.Count - limit);
     }
 }

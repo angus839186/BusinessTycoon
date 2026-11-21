@@ -30,10 +30,16 @@ public sealed class NoticeUI : MonoBehaviour
 
     private Coroutine showCoroutine;
 
+    private bool HasRequiredReferences => root != null && messageText != null;
+
     private void Awake()
     {
-        if (root == null)
-            root = GetComponent<CanvasGroup>();
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("NoticeUI 缺少 CanvasGroup 或 Message Text。", this);
+            enabled = false;
+            return;
+        }
 
         HideImmediately();
     }
@@ -46,46 +52,33 @@ public sealed class NoticeUI : MonoBehaviour
             showCoroutine = null;
         }
 
-        HideImmediately();
+        if (root != null)
+        {
+            HideImmediately();
+        }
     }
 
-    public void ShowInfo(string message)
-    {
-        Show(message, NoticeStyle.Info);
-    }
+    public void ShowInfo(string message) => Show(message, NoticeStyle.Info);
 
-    public void ShowSuccess(string message)
-    {
-        Show(message, NoticeStyle.Success);
-    }
+    public void ShowSuccess(string message) => Show(message, NoticeStyle.Success);
 
-    public void ShowError(string message)
-    {
-        Show(message, NoticeStyle.Error);
-    }
+    public void ShowError(string message) => Show(message, NoticeStyle.Error);
 
-    public void Show(
-        string message,
-        NoticeStyle style
-    )
+    public void Show(string message, NoticeStyle style)
     {
-        if (
-            root == null ||
-            messageText == null ||
-            string.IsNullOrWhiteSpace(message)
-        )
+        if (string.IsNullOrWhiteSpace(message))
         {
             return;
         }
 
         if (showCoroutine != null)
+        {
             StopCoroutine(showCoroutine);
+        }
 
         messageText.text = message;
         messageText.color = GetColor(style);
-
-        showCoroutine =
-            StartCoroutine(ShowRoutine());
+        showCoroutine = StartCoroutine(ShowRoutine());
     }
 
     private IEnumerator ShowRoutine()
@@ -146,9 +139,6 @@ public sealed class NoticeUI : MonoBehaviour
 
     private void HideImmediately()
     {
-        if (root == null)
-            return;
-
         root.alpha = 0f;
         root.interactable = false;
         root.blocksRaycasts = false;

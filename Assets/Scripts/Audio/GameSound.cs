@@ -10,54 +10,33 @@ public sealed class GameSound : MonoBehaviour
 
     [SerializeField] private MapPointer mapPointer;
 
+    private bool HasRequiredReferences =>
+    buildingPlacement != null &&
+    transportSystem != null &&
+    routeBuilder != null &&
+    mapPointer != null;
+
     private void Awake()
     {
-        if (buildingPlacement == null)
+        if (HasRequiredReferences)
         {
-            buildingPlacement = FindFirstObjectByType<BuildingPlacementController>();
+            return;
         }
 
-        if (transportSystem == null)
-        {
-            transportSystem = FindFirstObjectByType<TransportSystem>();
-        }
-        if (routeBuilder == null)
-        {
-            routeBuilder = FindFirstObjectByType<TransportRouteBuilder>();
-        }
-        if (mapPointer == null)
-        {
-            mapPointer =
-                FindFirstObjectByType<MapPointer>();
-        }
+        Debug.LogError("GameSound 缺少必要的系統參考。", this);
+        enabled = false;
     }
 
     private void OnEnable()
     {
-        if (buildingPlacement != null)
-        {
-            buildingPlacement.BuildingPlaced += HandleBuildingPlaced;
-        }
+        buildingPlacement.BuildingPlaced += HandleBuildingPlaced;
+        buildingPlacement.PlacementFailed += HandleOperationFailed;
 
-        if (transportSystem != null)
-        {
-            transportSystem.RouteCreated += HandleRouteCreated;
-        }
-        if (buildingPlacement != null)
-        {
-            buildingPlacement.PlacementFailed += HandleOperationFailed;
-        }
+        transportSystem.RouteCreated += HandleRouteCreated;
+        routeBuilder.RouteFailed += HandleOperationFailed;
 
-        if (routeBuilder != null)
-        {
-            routeBuilder.RouteFailed += HandleOperationFailed;
-        }
-        if (mapPointer != null)
-        {
-            mapPointer.MapClicked += HandleMapClicked;
-
-            mapPointer.InvalidPlacementClicked += HandleInvalidPlacement;
-        }
+        mapPointer.MapClicked += HandleMapClicked;
+        mapPointer.InvalidPlacementClicked += HandleInvalidPlacement;
     }
 
     private void OnDisable()
@@ -65,54 +44,59 @@ public sealed class GameSound : MonoBehaviour
         if (buildingPlacement != null)
         {
             buildingPlacement.BuildingPlaced -= HandleBuildingPlaced;
+            buildingPlacement.PlacementFailed -= HandleOperationFailed;
         }
 
         if (transportSystem != null)
         {
             transportSystem.RouteCreated -= HandleRouteCreated;
         }
-        if (buildingPlacement != null)
-        {
-            buildingPlacement.PlacementFailed -= HandleOperationFailed;
-        }
 
         if (routeBuilder != null)
         {
             routeBuilder.RouteFailed -= HandleOperationFailed;
         }
+
         if (mapPointer != null)
         {
             mapPointer.MapClicked -= HandleMapClicked;
-
             mapPointer.InvalidPlacementClicked -= HandleInvalidPlacement;
         }
     }
 
+    private static void PlaySfx(SfxId id)
+    {
+        AudioSystem audioSystem = AudioSystem.Instance;
+
+        if (audioSystem == null)
+        {
+            return;
+        }
+
+        audioSystem.PlaySfx(id);
+    }
+
     private void HandleBuildingPlaced(BuildingInstance building)
     {
-        AudioSystem.Instance?.PlaySfx(SfxId.BuildingPlaced);
+        PlaySfx(SfxId.BuildingPlaced);
     }
 
     private void HandleRouteCreated(TransportRouteDefinition route)
     {
-        AudioSystem.Instance?.PlaySfx(SfxId.RouteCreated);
+        PlaySfx(SfxId.RouteCreated);
     }
     private void HandleOperationFailed(string message)
     {
-        AudioSystem.Instance?.PlaySfx(SfxId.OperationFailed);
+        PlaySfx(SfxId.OperationFailed);
     }
 
     private void HandleMapClicked()
     {
-        AudioSystem.Instance?.PlaySfx(
-            SfxId.MapClick
-        );
+        PlaySfx(SfxId.MapClick);
     }
 
     private void HandleInvalidPlacement()
     {
-        AudioSystem.Instance?.PlaySfx(
-            SfxId.OperationFailed
-        );
+        PlaySfx(SfxId.OperationFailed);
     }
 }

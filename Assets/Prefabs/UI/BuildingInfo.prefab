@@ -2410,6 +2410,7 @@ GameObject:
   - component: {fileID: 2439104740392241713}
   - component: {fileID: 8942977187497482367}
   - component: {fileID: 6160942499160507532}
+  - component: {fileID: 6201999149776556667}
   m_Layer: 5
   m_Name: BuildingInfo
   m_TagString: Untagged
@@ -2458,7 +2459,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingTooltipUI
   selector: {fileID: 0}
-  infoRoot: {fileID: 8948265925045202655}
   iconImage: {fileID: 56563345712353575}
   nameText: {fileID: 7591203590228561971}
   categoryText: {fileID: 3251231463836646627}
@@ -2474,8 +2474,22 @@ MonoBehaviour:
   gameClock: {fileID: 0}
   panelController: {fileID: 0}
   maxInventoryLines: 3
-  infoCanvasGroup: {fileID: 3528937935297281434}
-  tweenDuration: 0.2
+  transition: {fileID: 6201999149776556667}
+--- !u!114 &6201999149776556667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8589999776937397406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d617fc31ed7cc44584f75b110b6eb09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UiTransition
+  root: {fileID: 8948265925045202655}
+  canvasGroup: {fileID: 3528937935297281434}
+  duration: 0.2
   hiddenOffset: {x: 48, y: 0}
 --- !u!1 &8743837188382720456
 GameObject:

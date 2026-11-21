@@ -30,10 +30,13 @@ public sealed partial class ProductionSystem
         if (building == null || buildings.Contains(building))
             return;
 
-        if (gameClock != null && building.LastMaintenanceGameMinutes <= 0)
-            building.SetLastMaintenanceGameMinutes(gameClock.TotalGameMinutes);
-        if (gameClock != null && building.LastProcessGameMinutes <= 0)
-            building.SetLastProcessGameMinutes(gameClock.TotalGameMinutes);
+        double currentGameMinutes = gameClock.TotalGameMinutes;
+
+        if (building.LastMaintenanceGameMinutes <= 0)
+            building.SetLastMaintenanceGameMinutes(currentGameMinutes);
+
+        if (building.LastProcessGameMinutes <= 0)
+            building.SetLastProcessGameMinutes(currentGameMinutes);
 
         buildings.Add(building);
         MarkBuildingsChanged();
@@ -41,46 +44,28 @@ public sealed partial class ProductionSystem
 
     public void Unregister(BuildingInstance building)
     {
-        if (building == null)
+        if (building == null || !buildings.Remove(building))
             return;
 
-        buildings.Remove(building);
         MarkBuildingsChanged();
     }
 
-    public bool SetBuildingOperational(
-    BuildingInstance building,
-    bool operational
-)
+    public bool SetBuildingOperational(BuildingInstance building, bool operational)
     {
-        if (building == null ||
-            !buildings.Contains(building))
-        {
+        if (building == null || !buildings.Contains(building))
             return false;
-        }
 
         if (!building.SetOperational(operational))
-        {
             return false;
-        }
 
-        if (operational &&
-            gameClock != null)
+        if (operational)
         {
-            double currentGameMinutes =
-                gameClock.TotalGameMinutes;
-
-            building.SetLastProcessGameMinutes(
-                currentGameMinutes
-            );
-
-            building.SetLastMaintenanceGameMinutes(
-                currentGameMinutes
-            );
+            double currentGameMinutes = gameClock.TotalGameMinutes;
+            building.SetLastProcessGameMinutes(currentGameMinutes);
+            building.SetLastMaintenanceGameMinutes(currentGameMinutes);
         }
 
         MarkBuildingsChanged();
-
         return true;
     }
 }

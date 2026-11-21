@@ -4,81 +4,52 @@ using UnityEngine.UI;
 
 public sealed class LoadingUI : MonoBehaviour
 {
-    [Header("Root")]
-    [SerializeField] private GameObject screenRoot;
-    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private UiTransition transition;
 
     [Header("Display")]
     [SerializeField] private TMP_Text messageText;
     [SerializeField] private Slider progressBar;
     [SerializeField] private TMP_Text progressText;
 
-    public bool IsVisible =>
-        screenRoot != null &&
-        screenRoot.activeSelf;
+    public bool IsVisible => transition != null && transition.IsVisible;
+
+    private bool HasRequiredReferences =>
+        transition != null &&
+        messageText != null &&
+        progressBar != null &&
+        progressText != null;
 
     private void Awake()
     {
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("LoadingUI 缺少必要的 UI 參考。", this);
+            enabled = false;
+            return;
+        }
+
         Hide();
     }
 
     public void Show(string message = "載入中...")
     {
-        if (screenRoot == null)
-        {
-            Debug.LogError(
-                "LoadingUI 尚未設定 Screen Root。",
-                this
-            );
-
-            return;
-        }
-
-        screenRoot.SetActive(true);
-
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = 1f;
-            canvasGroup.interactable = true;
-            canvasGroup.blocksRaycasts = true;
-        }
-
-        if (messageText != null)
-        {
-            messageText.text = message;
-        }
-
+        messageText.text = string.IsNullOrWhiteSpace(message) ? "載入中..." : message;
         SetProgress(0f);
+        transition.Show(true);
     }
 
     public void SetProgress(float progress)
     {
         float value = Mathf.Clamp01(progress);
-
-        if (progressBar != null)
-        {
-            progressBar.value = value;
-        }
-
-        if (progressText != null)
-        {
-            progressText.text =
-                $"{value * 100f:0}%";
-        }
+        progressBar.value = value;
+        progressText.text = $"{value * 100f:0}%";
     }
 
     public void Hide()
     {
-        if (canvasGroup != null)
+        if (transition != null)
         {
-            canvasGroup.alpha = 0f;
-            canvasGroup.interactable = false;
-            canvasGroup.blocksRaycasts = false;
-        }
-
-        if (screenRoot != null)
-        {
-            screenRoot.SetActive(false);
+            transition.Hide(true);
         }
     }
 }

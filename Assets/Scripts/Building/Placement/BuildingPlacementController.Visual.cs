@@ -1,7 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
 
-public sealed partial class BuildingPlacementController : MonoBehaviour
+public sealed partial class BuildingPlacementController
 {
     private void CreateProgressBar(Transform buildingTransform, BuildingInstance instance)
     {
@@ -32,13 +31,6 @@ public sealed partial class BuildingPlacementController : MonoBehaviour
         fillRenderer.sortingOrder = 301;
 
         BuildingProgressBar progressBar = root.AddComponent<BuildingProgressBar>();
-        progressBar.Initialize(
-    instance,
-    productionSystem,
-    fill.transform,
-    backgroundRenderer,
-    fillRenderer
-);
+        progressBar.Initialize(instance, productionSystem, fill.transform, backgroundRenderer, fillRenderer);
     }
-
 }

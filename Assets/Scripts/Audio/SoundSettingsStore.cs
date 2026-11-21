@@ -48,11 +48,7 @@ public static class SoundSettingsStore
             settings.sfxVolume =
                 Mathf.Clamp01(settings.sfxVolume);
 
-            if (settings.selectedTrack == null)
-            {
-                settings.selectedTrack =
-                    string.Empty;
-            }
+            settings.selectedTrack ??= string.Empty;
 
             return settings;
         }
@@ -67,9 +63,7 @@ public static class SoundSettingsStore
         }
     }
 
-    public static bool Save(
-        SoundSettings settings
-    )
+    public static bool Save(SoundSettings settings)
     {
         if (settings == null)
         {

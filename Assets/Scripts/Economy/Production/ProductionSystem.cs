@@ -31,24 +31,40 @@ public sealed partial class ProductionSystem : MonoBehaviour
     public event Action FinanceChanged;
     public event Action BuildingsChanged;
 
+    private void Awake()
+    {
+        if (gameRules == null)
+        {
+            Debug.LogError($"{nameof(ProductionSystem)} requires {nameof(GameRules)}.", this);
+            enabled = false;
+            return;
+        }
+
+        if (moneyResource == null)
+        {
+            Debug.LogError($"{nameof(ProductionSystem)} requires a money resource.", this);
+            enabled = false;
+            return;
+        }
+
+        if (gameClock == null)
+        {
+            Debug.LogError($"{nameof(ProductionSystem)} requires {nameof(GameClock)}.", this);
+            enabled = false;
+            return;
+        }
+
+        if (locationEconomyEvaluator == null)
+        {
+            Debug.LogError($"{nameof(ProductionSystem)} requires {nameof(LocationValueEvaluator)}.", this);
+            enabled = false;
+        }
+    }
+
     private void Start()
     {
-        if (marketSystem == null)
-        {
-            marketSystem =
-                FindFirstObjectByType<MarketSystem>();
-        }
-        if (gameRules == null)
-            gameRules = FindFirstObjectByType<GameRules>();
-        if (gameClock == null)
-            gameClock = FindFirstObjectByType<GameClock>();
-        if (locationEconomyEvaluator == null)
-            locationEconomyEvaluator = FindFirstObjectByType<LocationValueEvaluator>();
-        if (gameClock != null)
-        {
-            GetOrCreateMonthlyFinanceRecord();
-            gameClock.MonthChanged += HandleMonthChanged;
-        }
+        GetOrCreateMonthlyFinanceRecord();
+        gameClock.MonthChanged += HandleMonthChanged;
         foreach (ResourceAmount resourceAmount in startingResources)
         {
             if (
@@ -85,7 +101,7 @@ public sealed partial class ProductionSystem : MonoBehaviour
                 continue;
             }
 
-            TickBuilding(building, Time.deltaTime);
+            TickBuilding(building);
         }
     }
     private void OnDestroy()
@@ -101,9 +117,7 @@ public sealed partial class ProductionSystem : MonoBehaviour
     }
     private MonthlyFinanceRecord GetOrCreateMonthlyFinanceRecord()
     {
-        int currentMonth = gameClock != null
-        ? gameClock.MonthIndex + 1
-        : 1;
+        int currentMonth = gameClock.MonthIndex + 1;
 
         foreach (MonthlyFinanceRecord record in monthlyFinanceRecords)
         {
@@ -111,8 +125,7 @@ public sealed partial class ProductionSystem : MonoBehaviour
                 return record;
         }
 
-        MonthlyFinanceRecord newRecord =
-            new MonthlyFinanceRecord(currentMonth);
+        MonthlyFinanceRecord newRecord = new MonthlyFinanceRecord(currentMonth);
 
         monthlyFinanceRecords.Add(newRecord);
         return newRecord;

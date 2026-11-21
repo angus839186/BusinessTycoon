@@ -8,63 +8,57 @@ public sealed class GameClockPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI outputText;
     [SerializeField] private TextMeshProUGUI speedText;
 
+    private bool initialized;
+
+    private bool HasRequiredReferences =>
+        gameInput != null &&
+        gameClock != null &&
+        outputText != null &&
+        speedText != null;
+
     private void Awake()
     {
-        if (gameInput == null)
-            gameInput = FindFirstObjectByType<GameInput>();
-        if (gameClock == null)
-            gameClock = FindFirstObjectByType<GameClock>();
+        if (!HasRequiredReferences)
+        {
+            Debug.LogError("GameClockPanel 缺少必要參考。", this);
+            enabled = false;
+            return;
+        }
+
+        initialized = true;
     }
 
     private void OnEnable()
     {
-        if (gameInput != null)
-        {
-            gameInput.SpeedUpPressed += HandleSpeedUp;
-            gameInput.SpeedDownPressed += HandleSpeedDown;
-        }
-        if (gameClock != null)
-        {
-            gameClock.TimeChanged += Refresh;
-            gameClock.SpeedChanged += Refresh;
-        }
+        if (!initialized)
+            return;
+
+        gameInput.SpeedUpPressed += HandleSpeedUp;
+        gameInput.SpeedDownPressed += HandleSpeedDown;
+        gameClock.TimeChanged += Refresh;
+        gameClock.SpeedChanged += Refresh;
 
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (gameInput != null)
-        {
-            gameInput.SpeedUpPressed -= HandleSpeedUp;
-            gameInput.SpeedDownPressed -= HandleSpeedDown;
-        }
-        if (gameClock != null)
-        {
-            gameClock.TimeChanged -= Refresh;
-            gameClock.SpeedChanged -= Refresh;
-        }
-    }
-    private void HandleSpeedUp()
-    {
-        if (gameClock != null)
-            gameClock.IncreaseSpeed();
+        if (!initialized)
+            return;
+
+        gameInput.SpeedUpPressed -= HandleSpeedUp;
+        gameInput.SpeedDownPressed -= HandleSpeedDown;
+        gameClock.TimeChanged -= Refresh;
+        gameClock.SpeedChanged -= Refresh;
     }
 
-    private void HandleSpeedDown()
-    {
-        if (gameClock != null)
-            gameClock.DecreaseSpeed();
-    }
+    private void HandleSpeedUp() => gameClock.IncreaseSpeed();
+
+    private void HandleSpeedDown() => gameClock.DecreaseSpeed();
 
     private void Refresh()
     {
-        if (gameClock == null) return;
-
-        if (outputText != null)
-            outputText.text = gameClock.GetDisplayText();
-
-        if (speedText != null)
-            speedText.text = $"x{gameClock.SpeedMultiplier:0.##}";
+        outputText.text = gameClock.GetDisplayText();
+        speedText.text = $"x{gameClock.SpeedMultiplier:0.##}";
     }
 }

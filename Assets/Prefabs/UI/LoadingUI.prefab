@@ -245,7 +245,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7791080051455746911
 RectTransform:
   m_ObjectHideFlags: 0
@@ -539,6 +539,7 @@ GameObject:
   - component: {fileID: 7125899635289743470}
   - component: {fileID: 4335276055085689529}
   - component: {fileID: 8609034067325822114}
+  - component: {fileID: 2022963393602539285}
   m_Layer: 5
   m_Name: LoadingUI
   m_TagString: Untagged
@@ -578,8 +579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 403e07394690c614eb00f16108899c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadingUI
-  screenRoot: {fileID: 1348983034169363013}
-  canvasGroup: {fileID: 7938348133433800686}
+  transition: {fileID: 2022963393602539285}
   messageText: {fileID: 5568076843473221734}
   progressBar: {fileID: 6292774743843036472}
   progressText: {fileID: 8159403906505875130}
@@ -596,6 +596,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadingController
   loadingUI: {fileID: 4335276055085689529}
+--- !u!114 &2022963393602539285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3198761403873509137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d617fc31ed7cc44584f75b110b6eb09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UiTransition
+  root: {fileID: 7791080051455746911}
+  canvasGroup: {fileID: 7938348133433800686}
+  duration: 0.15
+  hiddenOffset: {x: 0, y: 0}
 --- !u!1 &4444379575237383200
 GameObject:
   m_ObjectHideFlags: 0
@@ -702,7 +718,7 @@ RectTransform:
   m_Father: {fileID: 6053383585532204592}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}

@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using UnityEngine;
 
 public enum BuildingCategory
@@ -53,23 +52,26 @@ public enum BuildingCategory
 public sealed class BuildingDefinition : ScriptableObject
 {
     [GameDataColumn]
-    [InspectorName("建築 ID")]
+    [Header("建築 ID")]
     public string buildingId;
 
     [GameDataColumn]
-    [InspectorName("顯示名稱")]
+    [Header("顯示名稱")]
     public string displayName;
 
     [GameDataColumn]
-    [InspectorName("建築類型")]
+    [Header("建築類型")]
     public BuildingCategory category;
 
+    [Header("建築Icon")]
     [GameDataColumn(AllowEmpty = true)]
     public Sprite icon;
 
+    [Header("預設是否啟用")]
     [GameDataColumn]
     public bool isEnabled = true;
 
+    [Header("地圖標記顏色")]
     [GameDataColumn]
     public Color markerColor = Color.white;
 
@@ -85,17 +87,19 @@ public sealed class BuildingDefinition : ScriptableObject
     [GameDataColumn(AllowEmpty = true)]
     public ResourceDefinition producedResource;
 
+    [Header("生產速度係數")]
     [GameDataColumn(MinValue = 0)]
     public float workSpeedMultiplier = 1f;
 
-    [Header("Commercial")]
+    [Header("出售獲得資源")]
     [GameDataColumn(AllowEmpty = true)]
     public ResourceDefinition saleResource;
 
+    [InspectorName("單次出售數量")]
     [GameDataColumn(MinValue = 0)]
     public int saleAmount = 1;
 
-    [Header("庫存")]
+    [Header("是否接受任何資源儲存")]
     [GameDataColumn]
     public bool acceptsAnyResource;
 
