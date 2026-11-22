@@ -1,2 +1,3 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+Assets/StreamingAssets/GHS_POP_2025_Taiwan_100m.json filter=lfs diff=lfs merge=lfs -text
