@@ -5,8 +5,6 @@ using UnityEngine;
 
 public sealed class BuildableAreaQuery : MonoBehaviour
 {
-    [SerializeField] private string mapFolder = "Maps/TaiwanTest";
-    [SerializeField] private string landAreaPath = "Layers/base/taiwan_admin_polygon.geojson";
 
     private readonly List<GeoJsonPolygonFeature> landAreas = new List<GeoJsonPolygonFeature>();
 
@@ -30,17 +28,8 @@ public sealed class BuildableAreaQuery : MonoBehaviour
     {
         landAreas.Clear();
 
-        string fullPath = Path.Combine(
-            Application.streamingAssetsPath,
-            mapFolder,
-            landAreaPath
-        );
-
-        if (!File.Exists(fullPath))
-        {
-            Debug.LogError($"Buildable area GeoJSON missing: {fullPath}");
+        if (!GeoJsonLayerFileResolver.TryFind(MapLayerLoader.MapFolder, GeoJsonLayerType.Land, out string fullPath))
             return;
-        }
 
         string json = File.ReadAllText(fullPath);
         JObject root = JObject.Parse(json);

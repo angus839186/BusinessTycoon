@@ -1,37 +1,59 @@
 using System.IO;
 using UnityEngine;
+using System;
 
 public static class MapLayerLoader
 {
-    public static void ValidateConfiguredLayers(string mapRootPath, MapConfig config)
+    private const string ConfigPath = "Config/map_config.json";
+    private const string DefaultMapFolder = "Maps/Taiwan";
+
+    private static MapConfig config;
+
+    public static MapConfig Config => config ??= LoadConfig();
+    public static string MapFolder => Config.mapFolder;
+
+    private static MapConfig LoadConfig()
     {
-        if (config == null || config.layers == null || config.layers.Length == 0)
+        string fullPath = Path.Combine(Application.streamingAssetsPath, ConfigPath);
+
+        if (!File.Exists(fullPath))
         {
-            Debug.Log("Map layers: no configured GeoJSON layers.");
-            return;
+            Debug.LogError($"Map config missing: {fullPath}");
+            return CreateFallbackConfig();
         }
 
-        foreach (MapLayerConfig layer in config.layers)
+        try
         {
-            if (layer == null || string.IsNullOrWhiteSpace(layer.path))
+            MapConfig loadedConfig = JsonUtility.FromJson<MapConfig>(File.ReadAllText(fullPath));
+
+            if (loadedConfig == null)
             {
-                Debug.LogWarning("Map layer skipped: empty layer path.");
-                continue;
+                Debug.LogError($"Map config is invalid: {fullPath}");
+                return CreateFallbackConfig();
             }
 
-            string layerPath = Path.Combine(mapRootPath, layer.path);
-
-            if (!File.Exists(layerPath))
+            if (string.IsNullOrWhiteSpace(loadedConfig.mapFolder))
             {
-                Debug.LogWarning($"Map layer missing: Id={layer.id}, Path={layerPath}");
-                continue;
+                Debug.LogWarning($"Map folder is empty. Using fallback: {DefaultMapFolder}");
+                loadedConfig.mapFolder = DefaultMapFolder;
             }
 
-            FileInfo fileInfo = new FileInfo(layerPath);
-
-            Debug.Log(
-                $"Map layer ready: Id={layer.id}, Category={layer.category}, Geometry={layer.geometry}, Bytes={fileInfo.Length}"
-            );
+            Debug.Log($"Map config loaded: Id={loadedConfig.mapId}, Folder={loadedConfig.mapFolder}");
+            return loadedConfig;
         }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception);
+            return CreateFallbackConfig();
+        }
+    }
+
+    private static MapConfig CreateFallbackConfig()
+    {
+        return new MapConfig
+        {
+            mapId = "Taiwan",
+            mapFolder = DefaultMapFolder
+        };
     }
 }

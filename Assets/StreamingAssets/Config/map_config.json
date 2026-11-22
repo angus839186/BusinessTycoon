@@ -1,20 +1,4 @@
 {
-  "mapId": "taiwan_test",
-  "layers": [
-    {
-      "id": "admin",
-      "displayName": "可建造範圍",
-      "path": "Layers/base/taiwan_admin_polygon.geojson",
-      "category": "buildable",
-      "geometry": "MultiPolygon",
-      "buildTags": [
-        "farming",
-        "ranch",
-        "forest",
-        "mineral",
-        "industry",
-        "commerce"
-      ]
-    }
-  ]
+  "mapId": "Taiwan",
+  "mapFolder": "Maps/Taiwan"
 }

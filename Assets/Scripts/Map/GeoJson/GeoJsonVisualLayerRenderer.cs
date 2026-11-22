@@ -7,8 +7,7 @@ using UnityEngine;
 public sealed class GeoJsonVisualLayerRenderer : MonoBehaviour
 {
     [SerializeField] private GeoJsonMapProjection projection;
-    [SerializeField] private string mapFolder = "Maps/TaiwanTest";
-    [SerializeField] private string layerPath = "Layers/taiwan_admin_polygon.geojson";
+    [SerializeField] private GeoJsonLayerType layerType = GeoJsonLayerType.Land;
 
     [SerializeField] private Color fillColor = new Color(0.7f, 0.7f, 0.7f, 1f);
     [SerializeField] private int sortingOrder = 10;
@@ -34,17 +33,8 @@ public sealed class GeoJsonVisualLayerRenderer : MonoBehaviour
 
     private void LoadLayer()
     {
-        string fullPath = Path.Combine(
-            Application.streamingAssetsPath,
-            mapFolder,
-            layerPath
-        );
-
-        if (!File.Exists(fullPath))
-        {
-            Debug.LogError($"找不到 GeoJSON：{fullPath}");
+        if (!GeoJsonLayerFileResolver.TryFind(MapLayerLoader.MapFolder, layerType, out string fullPath))
             return;
-        }
 
         string json = File.ReadAllText(fullPath);
         JObject root = JObject.Parse(json);
@@ -52,7 +42,7 @@ public sealed class GeoJsonVisualLayerRenderer : MonoBehaviour
 
         if (features == null)
         {
-            Debug.LogError($"GeoJSON 沒有 features：{fullPath}");
+            Debug.LogError($"GeoJSON has no features: {fullPath}");
             return;
         }
 
@@ -126,10 +116,7 @@ public sealed class GeoJsonVisualLayerRenderer : MonoBehaviour
             }
         }
 
-        Debug.Log(
-    $"GeoJSON visual layer loaded: {layerPath}, " +
-    $"Polygons={polygonCount}, Lines={lineCount}"
-);
+        Debug.Log($"GeoJSON visual layer loaded: {Path.GetFileName(fullPath)}, Polygons={polygonCount}, Lines={lineCount}");
     }
 
     private bool DrawPolygon(JToken polygonToken, int index)
@@ -188,12 +175,9 @@ public sealed class GeoJsonVisualLayerRenderer : MonoBehaviour
 
         return true;
     }
-    public void LoadLayer(string newLayerPath)
+    public void LoadLayer(GeoJsonLayerType newLayerType)
     {
-        if (string.IsNullOrWhiteSpace(newLayerPath))
-            return;
-
-        layerPath = newLayerPath;
+        layerType = newLayerType;
         ClearLayer();
 
         if (fillMaterial == null)

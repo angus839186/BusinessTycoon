@@ -2163,62 +2163,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2000485538}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &531854237
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 531854239}
-  - component: {fileID: 531854238}
-  m_Layer: 0
-  m_Name: GeoJsonRoadLayer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &531854238
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 531854237}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 459abf77f4d744342bc897421df0a2af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GeoJsonVisualLayerRenderer
-  projection: {fileID: 1922258535}
-  mapFolder: Maps/TaiwanTest
-  layerPath: Layers/base/taiwan_roads_line.geojson
-  fillColor: {r: 0.7056604, g: 0.38479608, b: 0.11583479, a: 1}
-  sortingOrder: 15
-  zPosition: -0.05
-  maxPolygons: 500
-  pointStep: 5
-  drawPolygons: 0
-  drawLines: 1
-  maxLines: 2000
-  lineWidth: 0.01
---- !u!4 &531854239
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 531854237}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 810178085}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &539221843
 GameObject:
   m_ObjectHideFlags: 0
@@ -3495,7 +3439,6 @@ Transform:
   - {fileID: 1922258536}
   - {fileID: 1583662317}
   - {fileID: 1089431932}
-  - {fileID: 531854239}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
@@ -3717,7 +3660,7 @@ GameObject:
   - component: {fileID: 1089431932}
   - component: {fileID: 1089431931}
   m_Layer: 0
-  m_Name: GeoJsonWaterLayer
+  m_Name: WaterLayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3736,8 +3679,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeoJsonVisualLayerRenderer
   projection: {fileID: 1922258535}
-  mapFolder: Maps/TaiwanTest
-  layerPath: Layers/base/taiwan_water_polygon.geojson
+  layerType: 1
   fillColor: {r: 0.31401205, g: 0.59797704, b: 0.90943396, a: 1}
   sortingOrder: 10
   zPosition: -0.01
@@ -4689,7 +4631,7 @@ GameObject:
   - component: {fileID: 1583662317}
   - component: {fileID: 1583662316}
   m_Layer: 0
-  m_Name: GeoJsonAdminLayer
+  m_Name: LandLayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4708,8 +4650,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeoJsonVisualLayerRenderer
   projection: {fileID: 1922258535}
-  mapFolder: Maps/TaiwanTest
-  layerPath: Layers/base/taiwan_admin_polygon.geojson
+  layerType: 0
   fillColor: {r: 0.15547727, g: 0.5169811, b: 0.13168381, a: 1}
   sortingOrder: 5
   zPosition: 0
@@ -4988,8 +4929,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ace3fc7b47e7c94480e9502f66bf61c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildableAreaQuery
-  mapFolder: Maps/TaiwanTest
-  landAreaPath: Layers/base/taiwan_admin_polygon.geojson
 --- !u!1 &1652587699
 GameObject:
   m_ObjectHideFlags: 0
@@ -7552,9 +7491,9 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 16719264}
+  - {fileID: 431320433}
   - {fileID: 810178085}
   - {fileID: 480667899}
-  - {fileID: 431320433}
   - {fileID: 2000485538}
   - {fileID: 1296131743}
   - {fileID: 894134450}
