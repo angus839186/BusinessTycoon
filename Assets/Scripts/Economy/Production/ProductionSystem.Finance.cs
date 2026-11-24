@@ -4,134 +4,45 @@ using UnityEngine;
 
 public sealed partial class ProductionSystem
 {
-    private void TickMaintenance(BuildingInstance building, BuildingDefinition definition)
+    private readonly List<MonthlyFinanceRecord> monthlyFinanceRecords = new List<MonthlyFinanceRecord>();
+    public IReadOnlyList<MonthlyFinanceRecord> MonthlyFinanceRecords => monthlyFinanceRecords;
+
+    private readonly List<IncomeRecord> incomeRecords = new List<IncomeRecord>();
+    public IReadOnlyList<IncomeRecord> IncomeRecords => incomeRecords;
+
+    private readonly List<ExpenseRecord> expenseRecords = new List<ExpenseRecord>();
+    public IReadOnlyList<ExpenseRecord> ExpenseRecords => expenseRecords;
+
+    private void InitializeFinance()
     {
-        if (definition.maintenanceCosts == null || definition.maintenanceCosts.Length == 0)
-            return;
-
-        double intervalMinutes = GetMaintenanceIntervalMinutes();
-
-        if (intervalMinutes <= 0)
-            return;
-
-        double elapsedMinutes =
-            gameClock.TotalGameMinutes - building.LastMaintenanceGameMinutes;
-
-        if (elapsedMinutes < intervalMinutes)
-            return;
-
-        float multiplier = gameRules.MaintenanceCostMultiplier;
-        LocationValueModifiers modifiers = GetLocationModifiers(building);
-        multiplier *= modifiers.maintenanceCostMultiplier;
-        ResourceAmount[] maintenanceCosts = CalculateModifiedCosts(definition.maintenanceCosts, multiplier);
-
-        if (TryPay(maintenanceCosts, definition.displayName, "Maintenance"))
-            building.SetLastMaintenanceGameMinutes(gameClock.TotalGameMinutes);
+        GetOrCreateMonthlyFinanceRecord();
+        gameClock.MonthChanged += HandleMonthChanged;
     }
-    private double GetMaintenanceIntervalMinutes() => gameRules.MaintenanceIntervalMinutes;
 
-    public bool TryPayConstructionCost(
-    BuildingDefinition definition,
-    Vector3 worldPosition,
-    double longitude,
-    double latitude,
-    out ResourceAmount[] paidCosts
-)
+    private void ShutdownFinance()
     {
-        paidCosts = Array.Empty<ResourceAmount>();
-
-        if (definition == null)
-            return false;
-
-        float multiplier = GetConstructionCostMultiplier(worldPosition, longitude, latitude);
-
-        paidCosts = CalculateModifiedCosts(
-            definition.constructionCosts,
-            multiplier
-        );
-
-        return TryPay(
-            paidCosts,
-            definition.displayName,
-            "Construction"
-        );
+        if (gameClock != null)
+            gameClock.MonthChanged -= HandleMonthChanged;
     }
-    public bool TryPayDemolitionCost(BuildingInstance building, float demolitionCostRate)
+    private void HandleMonthChanged()
     {
-        if (building == null)
-            return false;
+        GetOrCreateMonthlyFinanceRecord();
+        MarkFinanceChanged();
+    }
+    private MonthlyFinanceRecord GetOrCreateMonthlyFinanceRecord()
+    {
+        int currentMonth = gameClock.MonthIndex + 1;
 
-        List<ResourceAmount> demolitionCosts = new List<ResourceAmount>();
-
-        foreach (ResourceAmount cost in building.ConstructionCostSnapshot)
+        foreach (MonthlyFinanceRecord record in monthlyFinanceRecords)
         {
-            if (cost == null || cost.resource == null || cost.amount <= 0)
-                continue;
-
-            int amount = Mathf.CeilToInt(cost.amount * demolitionCostRate);
-
-            if (amount <= 0)
-                continue;
-
-            demolitionCosts.Add(new ResourceAmount
-            {
-                resource = cost.resource,
-                amount = amount
-            });
+            if (record.month == currentMonth)
+                return record;
         }
 
-        return TryPay(
-            demolitionCosts.ToArray(),
-            building.Definition != null ? building.Definition.displayName : building.InstanceId,
-            "Demolition"
-        );
-    }
-    public bool TryPay(
-    ResourceAmount[] costs,
-    string sourceName,
-    string expenseType
-)
-    {
-        if (costs == null || costs.Length == 0)
-            return true;
+        MonthlyFinanceRecord newRecord = new MonthlyFinanceRecord(currentMonth);
 
-        if (!globalInventory.HasEnough(costs))
-            return false;
-
-        int expense = CalculateExpense(costs);
-
-        globalInventory.TryConsumeAll(costs);
-
-        AddExpenseRecord(
-            sourceName,
-            expenseType,
-            costs,
-            expense
-        );
-
-        GetOrCreateMonthlyFinanceRecord().AddExpense(expense);
-
-        MarkFinanceChanged();
-        return true;
-    }
-    private void AddExpenseRecord(
-    string sourceName,
-    string expenseType,
-    ResourceAmount[] paidResources,
-    int expense
-)
-    {
-        ExpenseRecord record = new ExpenseRecord(
-            sourceName,
-            expenseType,
-            FormatResources(paidResources),
-            expense,
-            globalInventory.GetAmount(moneyResource), gameClock.TotalGameMinutes
-        );
-
-        expenseRecords.Insert(0, record);
-
-        TrimRecords(expenseRecords, maxExpenseRecords);
+        monthlyFinanceRecords.Add(newRecord);
+        return newRecord;
     }
 
     private void SellResources(BuildingInstance building, BuildingDefinition definition)
@@ -221,87 +132,6 @@ public sealed partial class ProductionSystem
         return Mathf.RoundToInt(
             baseIncome * multiplier
         );
-    }
-
-    private ResourceAmount[] CalculateModifiedCosts(ResourceAmount[] baseCosts, float multiplier)
-    {
-        if (baseCosts == null || baseCosts.Length == 0)
-            return Array.Empty<ResourceAmount>();
-
-        List<ResourceAmount> result = new List<ResourceAmount>();
-
-        foreach (ResourceAmount cost in baseCosts)
-        {
-            if (cost == null || cost.resource == null || cost.amount <= 0)
-                continue;
-
-            result.Add(new ResourceAmount
-            {
-                resource = cost.resource,
-                amount = Mathf.CeilToInt(cost.amount * multiplier)
-            });
-        }
-
-        return result.ToArray();
-    }
-
-    private int CalculateExpense(ResourceAmount[] resources)
-    {
-        if (resources == null)
-            return 0;
-
-        int total = 0;
-
-        foreach (ResourceAmount resourceAmount in resources)
-        {
-            if (
-                resourceAmount == null ||
-                resourceAmount.resource == null ||
-                resourceAmount.amount <= 0
-            )
-                continue;
-
-            if (resourceAmount.resource == moneyResource)
-            {
-                total += resourceAmount.amount;
-            }
-            else
-            {
-                int unitPrice =
-                    marketSystem != null
-                        ? marketSystem.GetUnitPrice(resourceAmount.resource)
-                        : Mathf.Max(
-                            0,
-                            resourceAmount.resource.basePrice
-                        );
-
-                total += unitPrice * resourceAmount.amount;
-            }
-        }
-
-        return total;
-    }
-
-    private string FormatResources(ResourceAmount[] resources)
-    {
-        if (resources == null || resources.Length == 0)
-            return "";
-
-        List<string> parts = new List<string>();
-
-        foreach (ResourceAmount resourceAmount in resources)
-        {
-            if (
-                resourceAmount == null ||
-                resourceAmount.resource == null ||
-                resourceAmount.amount <= 0
-            )
-                continue;
-
-            parts.Add($"{resourceAmount.resource.displayName} x{resourceAmount.amount}");
-        }
-
-        return string.Join(", ", parts);
     }
 
     private static void TrimRecords<T>(List<T> records, int maxCount)

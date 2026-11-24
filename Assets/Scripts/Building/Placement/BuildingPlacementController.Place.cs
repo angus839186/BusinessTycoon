@@ -14,7 +14,7 @@ public sealed partial class BuildingPlacementController
 
         ResourceAmount[] paidConstructionCosts = selectedBuilding.constructionCosts;
 
-        if (!productionSystem.TryPayConstructionCost(selectedBuilding, worldPosition, longitude, latitude, out paidConstructionCosts))
+        if (!productionSystem.TryPayConstructionCost(selectedBuilding, longitude, latitude, out paidConstructionCosts))
         {
             string message = $"Cannot Build: not enough resources for {selectedBuilding.displayName}";
             Debug.Log(message);

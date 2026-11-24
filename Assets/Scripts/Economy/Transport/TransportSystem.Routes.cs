@@ -111,61 +111,7 @@ public sealed partial class TransportSystem
         return true;
     }
 
-    public bool HasOutgoingRoute(
-    string buildingId
-)
-    {
-        if (
-            string.IsNullOrWhiteSpace(buildingId) ||
-            routes == null
-        )
-        {
-            return false;
-        }
 
-        foreach (
-            TransportRouteDefinition route in routes
-        )
-        {
-            if (
-                route != null &&
-                route.sourceBuildingId == buildingId
-            )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool HasIncomingRoute(
-        string buildingId
-    )
-    {
-        if (
-            string.IsNullOrWhiteSpace(buildingId) ||
-            routes == null
-        )
-        {
-            return false;
-        }
-
-        foreach (
-            TransportRouteDefinition route in routes
-        )
-        {
-            if (
-                route != null &&
-                route.targetBuildingId == buildingId
-            )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
     public void ClearRoutes()
     {
         routes = Array.Empty<TransportRouteDefinition>();

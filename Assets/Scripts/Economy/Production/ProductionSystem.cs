@@ -1,6 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System;
 
 public sealed partial class ProductionSystem : MonoBehaviour
 {
@@ -14,121 +12,48 @@ public sealed partial class ProductionSystem : MonoBehaviour
     [SerializeField] private LocationValueEvaluator locationEconomyEvaluator;
     [SerializeField] private int maxExpenseRecords = 50;
 
-    private readonly List<MonthlyFinanceRecord> monthlyFinanceRecords =
-    new List<MonthlyFinanceRecord>();
-
-    public IReadOnlyList<MonthlyFinanceRecord> MonthlyFinanceRecords =>
-        monthlyFinanceRecords;
-    private readonly List<BuildingInstance> buildings = new List<BuildingInstance>();
-    public IReadOnlyList<BuildingInstance> Buildings => buildings;
-    private readonly List<IncomeRecord> incomeRecords = new List<IncomeRecord>();
-    public IReadOnlyList<IncomeRecord> IncomeRecords => incomeRecords;
-    private readonly BuildingInventory globalInventory = new BuildingInventory();
-    public BuildingInventory GlobalInventory => globalInventory;
-    private readonly List<ExpenseRecord> expenseRecords = new List<ExpenseRecord>();
-    public IReadOnlyList<ExpenseRecord> ExpenseRecords => expenseRecords;
-    public event Action DataChanged;
-    public event Action FinanceChanged;
-    public event Action BuildingsChanged;
-
     private void Awake()
     {
-        if (gameRules == null)
-        {
-            Debug.LogError($"{nameof(ProductionSystem)} requires {nameof(GameRules)}.", this);
+        if (!ValidateDependencies())
             enabled = false;
-            return;
-        }
+    }
+
+    private bool ValidateDependencies()
+    {
+        if (gameRules == null)
+            return LogMissingDependency(nameof(GameRules));
 
         if (moneyResource == null)
-        {
-            Debug.LogError($"{nameof(ProductionSystem)} requires a money resource.", this);
-            enabled = false;
-            return;
-        }
+            return LogMissingDependency("a money resource");
 
         if (gameClock == null)
-        {
-            Debug.LogError($"{nameof(ProductionSystem)} requires {nameof(GameClock)}.", this);
-            enabled = false;
-            return;
-        }
+            return LogMissingDependency(nameof(GameClock));
 
         if (locationEconomyEvaluator == null)
-        {
-            Debug.LogError($"{nameof(ProductionSystem)} requires {nameof(LocationValueEvaluator)}.", this);
-            enabled = false;
-        }
+            return LogMissingDependency(nameof(LocationValueEvaluator));
+
+        return true;
+    }
+
+    private bool LogMissingDependency(string dependency)
+    {
+        Debug.LogError($"{nameof(ProductionSystem)} requires {dependency}.", this);
+        return false;
     }
 
     private void Start()
     {
-        GetOrCreateMonthlyFinanceRecord();
-        gameClock.MonthChanged += HandleMonthChanged;
-        foreach (ResourceAmount resourceAmount in startingResources)
-        {
-            if (
-                resourceAmount == null ||
-                resourceAmount.resource == null ||
-                resourceAmount.amount <= 0
-            )
-                continue;
-
-            globalInventory.Add(resourceAmount.resource, resourceAmount.amount);
-        }
-        MarkDataChanged();
-        BuildingInstance[] existingBuildings = FindObjectsByType<BuildingInstance>(
-            FindObjectsSortMode.None
-        );
-
-        foreach (BuildingInstance building in existingBuildings)
-            Register(building);
+        InitializeFinance();
+        InitializeStartingResources();
+        RegisterExistingBuildings();
     }
     private void Update()
     {
-        for (int i = buildings.Count - 1; i >= 0; i--)
-        {
-            BuildingInstance building = buildings[i];
-
-            if (building == null)
-            {
-                buildings.RemoveAt(i);
-                continue;
-            }
-
-            if (!building.IsOperational)
-            {
-                continue;
-            }
-
-            TickBuilding(building);
-        }
+        TickBuildings();
     }
     private void OnDestroy()
     {
-        if (gameClock != null)
-            gameClock.MonthChanged -= HandleMonthChanged;
-    }
-
-    private void HandleMonthChanged()
-    {
-        GetOrCreateMonthlyFinanceRecord();
-        MarkFinanceChanged();
-    }
-    private MonthlyFinanceRecord GetOrCreateMonthlyFinanceRecord()
-    {
-        int currentMonth = gameClock.MonthIndex + 1;
-
-        foreach (MonthlyFinanceRecord record in monthlyFinanceRecords)
-        {
-            if (record.month == currentMonth)
-                return record;
-        }
-
-        MonthlyFinanceRecord newRecord = new MonthlyFinanceRecord(currentMonth);
-
-        monthlyFinanceRecords.Add(newRecord);
-        return newRecord;
+        ShutdownFinance();
     }
 
 

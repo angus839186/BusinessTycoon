@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Collections;
 
-public sealed class MapCameraController : MonoBehaviour
+public sealed partial class MapCameraController : MonoBehaviour
 {
     [SerializeField] private GameInput gameInput;
     [SerializeField] private PanelController panelController;
@@ -13,10 +12,6 @@ public sealed class MapCameraController : MonoBehaviour
 
     [SerializeField, Min(0.05f)]
     private float focusDuration = 0.35f;
-
-    private Coroutine focusRoutine;
-
-
     private bool isInputBlocked;
 
     private void Awake()
@@ -57,66 +52,6 @@ public sealed class MapCameraController : MonoBehaviour
     {
         isInputBlocked = isOpen;
     }
-    public void FocusOn(Vector3 worldPosition)
-    {
-        if (focusRoutine != null)
-        {
-            StopCoroutine(focusRoutine);
-        }
-
-        focusRoutine = StartCoroutine(
-            FocusRoutine(worldPosition)
-        );
-    }
-
-    private IEnumerator FocusRoutine(
-    Vector3 worldPosition
-)
-    {
-        Camera camera = Camera.main;
-
-        if (camera == null)
-        {
-            focusRoutine = null;
-            yield break;
-        }
-
-        Vector3 startPosition =
-            camera.transform.position;
-
-        Vector3 targetPosition = new Vector3(
-            worldPosition.x,
-            worldPosition.y,
-            startPosition.z
-        );
-
-        float elapsedTime = 0f;
-
-        while (elapsedTime < focusDuration)
-        {
-            elapsedTime += Time.unscaledDeltaTime;
-
-            float progress = Mathf.Clamp01(
-                elapsedTime / focusDuration
-            );
-
-            float smoothProgress =
-                Mathf.SmoothStep(0f, 1f, progress);
-
-            camera.transform.position =
-                Vector3.Lerp(
-                    startPosition,
-                    targetPosition,
-                    smoothProgress
-                );
-
-            yield return null;
-        }
-
-        camera.transform.position = targetPosition;
-        focusRoutine = null;
-    }
-
     private void Update()
     {
         if (

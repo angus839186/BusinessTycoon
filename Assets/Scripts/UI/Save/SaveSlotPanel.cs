@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +9,7 @@ public enum SaveSlotMode
     Save
 }
 
-public sealed class SaveSlotPanel : MonoBehaviour
+public sealed partial class SaveSlotPanel : MonoBehaviour
 {
     [Header("Systems")]
     [SerializeField] private GameInput gameInput;
@@ -25,13 +24,9 @@ public sealed class SaveSlotPanel : MonoBehaviour
     [SerializeField] private SaveSlotItem itemPrefab;
     [SerializeField] private Button closeButton;
     [SerializeField] private TextMeshProUGUI feedbackText;
-
     [Header("Dialog")][SerializeField] private ConfirmDialog confirmDialog;
-
     public event Action SlotsChanged;
-    private ReusableUIList<SaveSlotItem> itemList;
     private SaveSlotMode mode;
-
     private void Awake()
     {
         if (gameInput == null)
@@ -141,115 +136,6 @@ public sealed class SaveSlotPanel : MonoBehaviour
         }
         Refresh();
     }
-
-    private void Refresh()
-    {
-        if (itemList == null)
-        {
-            return;
-        }
-
-        if (titleText != null)
-        {
-            titleText.text =
-                mode == SaveSlotMode.Load
-                    ? "讀取遊戲"
-                    : "儲存遊戲";
-        }
-
-        IReadOnlyList<SaveSlotInfo> infos =
-    mode == SaveSlotMode.Load
-        ? SaveSlots.GetLoadInfos()
-        : SaveSlots.GetInfos();
-
-        int index = 0;
-
-        foreach (SaveSlotInfo info in infos)
-        {
-            SaveSlotItem item =
-                itemList.GetOrCreate(index);
-
-            if (item == null)
-            {
-                continue;
-            }
-
-            bool actionEnabled =
-                CanUseSlot(info);
-
-            bool deleteEnabled = info != null && info.Exists;
-
-            item.Bind(info, mode == SaveSlotMode.Load ? "讀取" : "儲存",
-            actionEnabled, HandleSlotAction, deleteEnabled, HandleDeleteRequested);
-
-            index++;
-        }
-
-        itemList.HideFrom(index);
-    }
-    private void ShowSuccess(string message)
-    {
-        SetFeedback(message);
-
-        if (noticeUI != null)
-        {
-            noticeUI.ShowSuccess(message);
-        }
-    }
-
-    private void ShowError(string message)
-    {
-        SetFeedback(message);
-
-        if (noticeUI != null)
-        {
-            noticeUI.ShowError(message);
-        }
-    }
-
-    private void HandleDeleteRequested(
-    string slotId
-)
-    {
-        if (confirmDialog == null)
-        {
-            const string message =
-                "無法開啟刪除確認視窗。";
-
-            Debug.LogError(message, this);
-            ShowError(message);
-            return;
-        }
-
-        confirmDialog.Show(
-            "刪除存檔",
-            "確定要刪除這個存檔嗎？\n" +
-            "刪除後無法復原。",
-            () => DeleteSlot(slotId)
-        );
-    }
-
-    private void DeleteSlot(string slotId)
-    {
-        if (!SaveSlots.TryDelete(
-                slotId,
-                out string errorMessage
-            ))
-        {
-            string message =
-                $"刪除失敗：{errorMessage}";
-
-            Debug.LogError(message, this);
-            ShowError(message);
-            return;
-        }
-
-        ShowSuccess("存檔已刪除。");
-
-        Refresh();
-        SlotsChanged?.Invoke();
-    }
-
     private void SetFeedback(string message)
     {
         if (feedbackText == null)
@@ -262,147 +148,6 @@ public sealed class SaveSlotPanel : MonoBehaviour
         feedbackText.gameObject.SetActive(
             !string.IsNullOrWhiteSpace(message)
         );
-    }
-
-    private bool CanUseSlot(SaveSlotInfo info)
-    {
-        if (info == null)
-        {
-            return false;
-        }
-
-        if (mode == SaveSlotMode.Save)
-        {
-            return gameSaveSystem != null;
-        }
-
-        return
-            info.Exists &&
-            info.CanLoad &&
-            string.IsNullOrWhiteSpace(
-                info.ErrorMessage
-            );
-    }
-
-    private void HandleSlotAction(string slotId)
-    {
-        if (mode == SaveSlotMode.Save)
-        {
-            SaveToSlot(slotId);
-            return;
-        }
-
-        LoadFromSlot(slotId);
-    }
-
-    private void SaveToSlot(string slotId)
-    {
-        if (gameSaveSystem == null)
-        {
-            const string message =
-                "找不到遊戲存檔系統。";
-
-            Debug.LogError(message, this);
-            ShowError(message);
-            return;
-        }
-
-        if (!gameSaveSystem.SetActiveSlot(slotId))
-        {
-            string message =
-                $"無法選擇存檔槽：{slotId}";
-
-            Debug.LogError(message, this);
-            ShowError(message);
-            return;
-        }
-
-        try
-        {
-            gameSaveSystem.SaveGame();
-
-            ShowSuccess("遊戲已儲存。");
-
-            Refresh();
-            SlotsChanged?.Invoke();
-        }
-        catch (Exception exception)
-        {
-            Debug.LogException(exception, this);
-
-            ShowError(
-                "儲存失敗，請稍後再試。"
-            );
-        }
-    }
-
-    private void LoadFromSlot(string slotId)
-    {
-        if (gameSaveSystem != null)
-        {
-            if (loadingController == null)
-            {
-                ShowError("找不到載入畫面控制器。");
-                return;
-            }
-
-            if (!gameSaveSystem.SetActiveSlot(slotId))
-            {
-                ShowError(
-                    $"無法選擇存檔槽：{slotId}"
-                );
-
-                return;
-            }
-
-            loadingController.RunTask(
-                "讀取遊戲...",
-                gameSaveSystem.TryLoadGame,
-                HandleLoadCompleted
-            );
-
-            return;
-        }
-
-        if (loadingController == null)
-        {
-            ShowError(
-                "找不到載入畫面控制器。"
-            );
-
-            return;
-        }
-
-        if (!GameLaunchRequest.RequestContinueGame(
-                slotId
-            ))
-        {
-            ShowError(
-                "無法讀取選擇的存檔。"
-            );
-
-            return;
-        }
-
-        loadingController.LoadScene(
-            SceneNames.Main,
-            "讀取遊戲..."
-        );
-    }
-
-    private void HandleLoadCompleted(bool succeeded)
-    {
-        if (!succeeded)
-        {
-            ShowError(
-                "讀取失敗，請確認存檔是否有效。"
-            );
-
-            return;
-        }
-
-        ShowSuccess("遊戲已讀取。");
-        Close();
     }
     private void HandleCancelPressed()
     {

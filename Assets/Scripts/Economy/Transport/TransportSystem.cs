@@ -19,12 +19,8 @@ public sealed partial class TransportSystem : MonoBehaviour
     [SerializeField] private MonoBehaviour pathProviderBehaviour;
 
     [SerializeField] private int maxTransportRecords = 50;
-    private readonly List<TransportRecord> transportRecords = new List<TransportRecord>();
     public IReadOnlyList<TransportRouteDefinition> Routes =>
     routes ?? Array.Empty<TransportRouteDefinition>();
-
-    public IReadOnlyList<TransportRecord> TransportRecords =>
-        transportRecords;
 
     private ITransportPathProvider pathProvider;
     public int RouteVersion { get; private set; }
@@ -35,10 +31,6 @@ public sealed partial class TransportSystem : MonoBehaviour
     public int NextRouteIndex => nextRouteIndex;
 
     private int nextRouteIndex = 1;
-
-    public event Action RoutesChanged;
-    public event Action TransportChanged;
-    public event Action<TransportRouteDefinition> RouteCreated;
 
     private void Awake()
     {

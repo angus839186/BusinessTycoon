@@ -15,35 +15,19 @@ public sealed class LocationValueEvaluator : MonoBehaviour
     [SerializeField] private LocationValueArea[] areas;
     [SerializeField] private float fallbackPopulation01 = 0.2f;
 
-    public LocationValueModifiers Evaluate(
-        Vector3 worldPosition,
-        double longitude,
-        double latitude
-    )
+    public LocationValueModifiers Evaluate(double longitude, double latitude)
     {
         if (!useLocationModifiers)
             return LocationValueModifiers.Default;
 
-        string areaName;
-        float population01 = CalculatePopulation01(longitude, latitude, out areaName);
-
-        float costMultiplier = Mathf.Lerp(
-            lowPopulationCostMultiplier,
-            highPopulationCostMultiplier,
-            population01
-        );
-
-        float commercialPriceMultiplier = Mathf.Lerp(
-            lowPopulationCommercialPriceMultiplier,
-            highPopulationCommercialPriceMultiplier,
-            population01
-        );
-
-        float resourceSpeedMultiplier = Mathf.Lerp(
-            lowPopulationResourceSpeedMultiplier,
-            highPopulationResourceSpeedMultiplier,
-            population01
-        );
+        float population01 = CalculatePopulation01(longitude, latitude, out _);
+        return CreateModifiers(population01);
+    }
+    private LocationValueModifiers CreateModifiers(float population01)
+    {
+        float costMultiplier = Mathf.Lerp(lowPopulationCostMultiplier, highPopulationCostMultiplier, population01);
+        float commercialPriceMultiplier = Mathf.Lerp(lowPopulationCommercialPriceMultiplier, highPopulationCommercialPriceMultiplier, population01);
+        float resourceSpeedMultiplier = Mathf.Lerp(lowPopulationResourceSpeedMultiplier, highPopulationResourceSpeedMultiplier, population01);
 
         return new LocationValueModifiers(
             costMultiplier,
@@ -97,20 +81,13 @@ public sealed class LocationValueEvaluator : MonoBehaviour
 
         return Mathf.Max(highestPopulation, fallback);
     }
-    public LocationValueEvaluation EvaluateDetailed(
-    Vector3 worldPosition,
-    double longitude,
-    double latitude
-)
+    public LocationValueEvaluation EvaluateDetailed(double longitude, double latitude)
     {
-        string areaName;
-        float population01 = CalculatePopulation01(longitude, latitude, out areaName);
-        LocationValueModifiers modifiers = Evaluate(worldPosition, longitude, latitude);
+        float population01 = CalculatePopulation01(longitude, latitude, out string areaName);
+        LocationValueModifiers modifiers = useLocationModifiers
+            ? CreateModifiers(population01)
+            : LocationValueModifiers.Default;
 
-        return new LocationValueEvaluation(
-            population01,
-            areaName,
-            modifiers
-        );
+        return new LocationValueEvaluation(population01, areaName, modifiers);
     }
 }
